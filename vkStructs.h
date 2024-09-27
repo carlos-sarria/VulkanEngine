@@ -9,6 +9,15 @@
 #define FENCE_TIMEOUT std::numeric_limits<uint64_t>::max()
 #define NUM_DESCRIPTOR_SETS 2
 
+/// <summary>Gets the minimum aligned data size based on the size of the data to align and the minimum alignment size specified</summary>
+/// <param name="dataSize">The size of the data to align based on the minimum alignment</param>
+/// <param name="minimumAlignment">The minimum data size alignment supported</param>
+/// <returns>The minimum aligned data size</returns>
+inline size_t getAlignedDataSize(size_t dataSize, size_t minimumAlignment)
+{
+    return (dataSize / minimumAlignment) * minimumAlignment + ((dataSize % minimumAlignment) > 0 ? minimumAlignment : 0);
+}
+
 struct SwapchainImage
 {
     VkImage image;

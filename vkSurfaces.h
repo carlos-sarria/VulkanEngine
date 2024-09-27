@@ -1,8 +1,79 @@
-#ifndef VKSWAPCHAIN_H
-#define VKSWAPCHAIN_H
+#ifndef VKSURFACES_H
+#define VKSURFACES_H
 
 #include "MainWindows.h"
 #include "vkStructs.h"
+
+/// <summary>Creates a number of framebuffer objects equal to the number of images in the swapchain</summary>
+void initFrameBuffers(AppManager& appManager)
+{
+    // Concept: Framebuffers
+    // In Vulkan, all the attachments used by the render pass are defined in framebuffers. Each frame in a framebuffer defines
+    // the attachments related to it. This includes the textures (including the colour and depth / stencil attachments) and
+    // the input attachments. This way of separating descriptions in render passes and definitions in framebuffers gives the option
+    // of using different render passes with different framebuffers. However, the degree of flexibility with which this can be done is based on the
+    // compatibility of the two.
+
+    // This function creates a framebuffer for each swapchain image.
+
+    // This is a placeholder handle for the attachment which will be stored in the VkFramebufferCreateInfo.
+    VkImageView attachment = VK_NULL_HANDLE;
+
+    // Populate a framebuffer info struct with the information that is needed to create the framebuffers. This includes its dimensions, its attachments, and the associated render
+    // pass that will use the specified attachments. The attachment member will be a null variable for now.
+    VkFramebufferCreateInfo frameBufferInfo = {};
+    frameBufferInfo.flags = 0;
+    frameBufferInfo.pNext = nullptr;
+    frameBufferInfo.attachmentCount = 1;
+    frameBufferInfo.height = appManager.swapchainExtent.height;
+    frameBufferInfo.width = appManager.swapchainExtent.width;
+    frameBufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+    frameBufferInfo.renderPass = appManager.renderPass;
+    frameBufferInfo.pAttachments = &attachment;
+    frameBufferInfo.layers = 1;
+
+    // Resize the vector which will contain all of the framebuffers based on the number of images in the swap chain.
+    appManager.frameBuffers.resize(appManager.swapChainImages.size());
+
+    // Create as many framebuffer objects as swapchain images and assign each image to a framebuffer.
+    // Note that, above, the pAttachments variable has been assigned to the address of the
+    // local variable "attachment". Every time pAttachments is reassigned a new image is used during framebuffer creation.
+    for (size_t i = 0; i < appManager.swapChainImages.size(); ++i)
+    {
+        attachment = appManager.swapChainImages[i].view;
+
+        debugAssertFunctionResult(vk::CreateFramebuffer(appManager.device, &frameBufferInfo, nullptr, &appManager.frameBuffers[i]), "Swapchain Frame buffer creation");
+    }
+}
+
+
+/// <summary>Sets up the view port and also sets up the scissor</summary>
+void initViewportAndScissor(AppManager& appManager, SurfaceData& surfaceData)
+{
+    // The viewport is essentially the dimensions of the rendering area and
+    // the scissor is a sub-section of this viewport which is actually stored.
+
+    // Viewport and scissors are set dynamically with vkCmdSetViewport and vkCmdSetScissor.
+
+    // This code sets up the values that will be used by these commands. In this example,
+    // the extents of the scissor are the same as the viewport.
+
+    // Set the viewport dimensions, depth, and starting coordinates.
+    appManager.viewport.width = surfaceData.width;
+    appManager.viewport.height = surfaceData.height;
+    appManager.viewport.minDepth = 0.0f;
+    appManager.viewport.maxDepth = 1.0f;
+    appManager.viewport.x = 0;
+    appManager.viewport.y = 0;
+
+    // Set the extent to the dimensions of the surface and set the offset in both directions to 0.
+    appManager.scissor.extent.width = static_cast<uint32_t>(surfaceData.width);
+    appManager.scissor.extent.height = static_cast<uint32_t>(surfaceData.height);
+    appManager.scissor.offset.x = 0;
+    appManager.scissor.offset.y = 0;
+
+    // The viewport and scissor are now ready to be set.
+}
 
 /// <summary>Initialises the surface that will be presented to</summary>
 static void initSurface(AppManager& appManager, SurfaceData& surfaceData)
@@ -326,4 +397,4 @@ static void initSwapChain(AppManager& appManager, SurfaceData& surfaceData)
     debugAssertFunctionResult(vk::CreateSwapchainKHR(appManager.device, &swapchainInfo, nullptr, &appManager.swapchain), "SwapChain Creation");
 }
 
-#endif // VKSWAPCHAIN_H
+#endif // VKSURFACES_H

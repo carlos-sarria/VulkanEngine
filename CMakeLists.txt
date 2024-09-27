@@ -20,9 +20,16 @@ add_executable(VulkanEngine WIN32 ${SRC_FILES}
     vkExtensions.h
     vkInit.h
     vkQueues.h
-    vkSwapChain.h
+    vkSurfaces.h
     vkTextures.h
     vkMemory.h
+    vkShaders.h
+    vkGeometry.h
+    vkRenderPass.h
+    vkDescriptor.h
+    vkPipeline.h
+    vkCommandBuffer.h
+    vkFences.h
 )
 
 set_target_properties(VulkanEngine PROPERTIES CXX_STANDARD 14)

@@ -47,14 +47,7 @@ std::vector<std::string> filterLayers(const std::vector<VkLayerProperties>& laye
     return outLayers;
 }
 
-/// <summary>Gets the minimum aligned data size based on the size of the data to align and the minimum alignment size specified</summary>
-/// <param name="dataSize">The size of the data to align based on the minimum alignment</param>
-/// <param name="minimumAlignment">The minimum data size alignment supported</param>
-/// <returns>The minimum aligned data size</returns>
-inline size_t getAlignedDataSize(size_t dataSize, size_t minimumAlignment)
-{
-    return (dataSize / minimumAlignment) * minimumAlignment + ((dataSize % minimumAlignment) > 0 ? minimumAlignment : 0);
-}
+
 
 /// <summary>Finds the names of the required validation layers</summary>
 /// <returns>Vector of the names of required validation layers which are to be activated</returns>

@@ -30,43 +30,7 @@ private:
     // the multiple aspects of different Vulkan objects
 	std::array<std::array<float, 4>, 4> viewProj = std::array<std::array<float, 4>, 4>();
 
-
-
-	void initUniformBuffers();
-
 public:
-
-
-	// Create vertex buffers to draw the primitive.
-	void initVertexBuffers();
-
-	// Create a descriptor pool and allocate descriptor sets for the buffers.
-	void initDescriptorPoolAndSet();
-
-	// Compile and convert the shaders that will be used.
-	void initShaders();
-
-	// Create the pipeline to use for the rendering.
-	void initPipeline();
-
-	// Create the render pass to use for rendering the triangle.
-	void initRenderPass();
-
-	// Create the frame buffers for rendering.
-	void initFrameBuffers();
-
-	// Create the command buffer to be sent to the GPU from the command pool.
-	void initCommandPoolAndBuffer();
-
-	// Initialise the viewport and scissor for the rendering.
-	void initViewportAndScissor();
-
-	// Create the semaphore to deal with the command queue.
-	void initSemaphoreAndFence();
-
-
-	// Generic method for creating a dynamic uniform buffer.
-	void createDynamicUniformBuffer(BufferData& inBuffer);
 
 	// Generic method for creating a shader module.
 	void createShaderModule(const uint32_t* spvShader, size_t spvShaderSize, int indx, VkShaderStageFlagBits shaderStage);
@@ -79,9 +43,6 @@ public:
 
 	// Cleans up everything when the application is finished with.
 	void deinitialize();
-
-	// Record the command buffer for rendering the example.
-	void recordCommandBuffer();
 
 	// Execute the command buffer and present the result to the surface.
 	void drawFrame();
