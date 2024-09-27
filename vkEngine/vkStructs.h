@@ -100,4 +100,118 @@ struct Vertex
     float u, v; // texture UVs.
 };
 
+// The Surface Data structure is different based on the platform being used.
+// The structure is defined and its members, inside Vulkan-provided preprocessors.
+#ifdef VK_USE_PLATFORM_WIN32_KHR
+struct SurfaceData
+{
+    float width, height;
+
+    HINSTANCE connection;
+    HWND window;
+
+    SurfaceData() {};
+};
+#endif
+
+#ifdef VK_USE_PLATFORM_XLIB_KHR
+struct SurfaceData
+{
+    float width, height;
+
+    Display* display;
+    Window window;
+
+    SurfaceData() {}
+};
+#endif
+
+#ifdef VK_USE_PLATFORM_XCB_KHR
+struct SurfaceData
+{
+    float width, height;
+
+    xcb_connection_t* connection;
+    xcb_screen_t* screen;
+    xcb_window_t window;
+
+    uint32_t deleteWindowAtom;
+
+    SurfaceData() {}
+};
+#endif
+
+#ifdef VK_USE_PLATFORM_ANDROID_KHR
+struct SurfaceData
+{
+    float width, height;
+
+    ANativeWindow* window;
+
+    SurfaceData() { width = height = 0; }
+};
+
+#endif
+
+#ifdef VK_USE_PLATFORM_WAYLAND_KHR
+struct SurfaceData
+{
+    float width, height;
+
+    wl_display* display;
+    wl_surface* surface;
+    wl_registry* wlRegistry;
+    wl_compositor* wlCompositor;
+    wl_shell* wlShell;
+    wl_seat* wlSeat;
+    wl_pointer* wlPointer;
+    wl_shell_surface* wlShellSurface;
+
+    SurfaceData()
+    {
+        width = height = 0;
+        display = NULL;
+        surface = NULL;
+        wlRegistry = NULL;
+        wlCompositor = NULL;
+        wlShell = NULL;
+        wlSeat = NULL;
+        wlPointer = NULL;
+        wlShellSurface = NULL;
+    }
+};
+#endif
+
+#ifdef VK_USE_PLATFORM_MACOS_MVK
+struct SurfaceData
+{
+    float width, height;
+
+    void* view;
+
+    SurfaceData()
+    {
+        width = height = 0;
+        view = NULL;
+    }
+};
+#endif
+
+#ifdef USE_PLATFORM_NULLWS
+struct SurfaceData
+{
+    float width, height;
+
+    VkDisplayKHR nativeDisplay;
+    VkSurfaceKHR surface;
+
+    SurfaceData()
+    {
+        nativeDisplay = VK_NULL_HANDLE;
+        surface = VK_NULL_HANDLE;
+        width = height = 0;
+    }
+};
+#endif
+
 #endif // VKSTRUCTS_H

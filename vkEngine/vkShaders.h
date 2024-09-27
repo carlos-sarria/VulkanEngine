@@ -3,8 +3,8 @@
 
 #include "vkStructs.h"
 #include "vkMemory.h"
-#include "FragShader.h"
-#include "VertShader.h"
+#include "../FragShader.h"
+#include "../VertShader.h"
 
 /// <summary>Creates a shader module using pre-compiled SPIR-V shader source code</summary>
 /// <param name="spvShader">Shader source code</param>

@@ -1,13 +1,6 @@
-/*!*********************************************************************************************************************
-\File         MainWindows.cpp
-\Title        Main Windows
-\Author       PowerVR by Imagination, Developer Technology Team.
-\Copyright    Copyright(c) Imagination Technologies Limited.
-\brief        Adds the entry point for running the example on a Windows platform.
-***********************************************************************************************************************/
+#include <windows.h>
 
-#include "MainWindows.h"
-#include "VulkanEngine.h"
+#include "EngineExample.h"
 
 #ifdef VK_USE_PLATFORM_WIN32_KHR
 

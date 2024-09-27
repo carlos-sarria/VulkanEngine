@@ -193,31 +193,31 @@ PVR_VULKAN_FUNCTION_POINTER_DEFINITION(DestroyDebugReportCallbackEXT)
 static NativeLibrary& vkglueLib()
 {
 #if _WIN32
-	static NativeLibrary mylib("vulkan-1.dll");
+    static NativeLibrary mylib("vulkan-1.dll");
 #endif
 #if _LINUX || _ANDROID
-	static NativeLibrary mylib("libvulkan.so");
+    static NativeLibrary mylib("libvulkan.so");
 #endif
 #if _APPLE
-	static NativeLibrary mylib("libMoltenVK.dylib");
+    static NativeLibrary mylib("libMoltenVK.dylib");
 #endif
-	return mylib;
+    return mylib;
 }
 
 bool vk::initVulkan()
 {
-	GetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)vkglueLib().getFunction("vkGetInstanceProcAddr");
+    GetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)vkglueLib().getFunction("vkGetInstanceProcAddr");
 
-	if (GetInstanceProcAddr)
-	{
+    if (GetInstanceProcAddr)
+    {
         VULKAN_GET_INSTANCE_POINTER(VK_NULL_HANDLE, EnumerateInstanceExtensionProperties);
         VULKAN_GET_INSTANCE_POINTER(VK_NULL_HANDLE, EnumerateInstanceLayerProperties);
         VULKAN_GET_INSTANCE_POINTER(VK_NULL_HANDLE, CreateInstance);
-	}
+    }
 
-	if (!GetInstanceProcAddr || !EnumerateInstanceExtensionProperties || !EnumerateInstanceLayerProperties || !CreateInstance || !DestroyInstance) { return false; }
+    if (!GetInstanceProcAddr || !EnumerateInstanceExtensionProperties || !EnumerateInstanceLayerProperties || !CreateInstance || !DestroyInstance) { return false; }
 
-	return true;
+    return true;
 }
 
 bool vk::initVulkanInstance(VkInstance instance)
@@ -269,13 +269,13 @@ bool vk::initVulkanInstance(VkInstance instance)
     VULKAN_GET_INSTANCE_POINTER(instance, DebugReportMessageEXT)
     VULKAN_GET_INSTANCE_POINTER(instance, DestroyDebugReportCallbackEXT)
 
-	if (!DestroyInstance || !EnumerateDeviceLayerProperties || !EnumerateDeviceExtensionProperties || !GetPhysicalDeviceSurfaceCapabilitiesKHR || !GetPhysicalDeviceSurfaceFormatsKHR ||
-		!EnumeratePhysicalDevices || !GetPhysicalDeviceQueueFamilyProperties || !GetPhysicalDeviceFeatures || !CreateDevice || !GetDeviceProcAddr ||
-		!GetPhysicalDeviceMemoryProperties || !GetPhysicalDeviceSurfacePresentModesKHR || !GetPhysicalDeviceSurfaceSupportKHR || !GetPhysicalDeviceFormatProperties ||
-		!GetPhysicalDeviceProperties || !DestroySurfaceKHR || !GetPhysicalDeviceImageFormatProperties || !GetPhysicalDeviceSparseImageFormatProperties)
-	{ return false; }
+    if (!DestroyInstance || !EnumerateDeviceLayerProperties || !EnumerateDeviceExtensionProperties || !GetPhysicalDeviceSurfaceCapabilitiesKHR || !GetPhysicalDeviceSurfaceFormatsKHR ||
+        !EnumeratePhysicalDevices || !GetPhysicalDeviceQueueFamilyProperties || !GetPhysicalDeviceFeatures || !CreateDevice || !GetDeviceProcAddr ||
+        !GetPhysicalDeviceMemoryProperties || !GetPhysicalDeviceSurfacePresentModesKHR || !GetPhysicalDeviceSurfaceSupportKHR || !GetPhysicalDeviceFormatProperties ||
+        !GetPhysicalDeviceProperties || !DestroySurfaceKHR || !GetPhysicalDeviceImageFormatProperties || !GetPhysicalDeviceSparseImageFormatProperties)
+    { return false; }
 
-	return true;
+    return true;
 }
 
 bool vk::initVulkanDevice(VkDevice device)
@@ -407,25 +407,25 @@ bool vk::initVulkanDevice(VkDevice device)
     VULKAN_GET_DEVICE_POINTER(device, CmdEndRenderPass)
     VULKAN_GET_DEVICE_POINTER(device, CmdExecuteCommands)
 
-	return true;
+    return true;
 }
 
 #ifdef VK_USE_PLATFORM_WIN32_KHR
 VKAPI_ATTR VkBool32 VKAPI_CALL CustomDebugReportCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode,
-	const char* pLayerPrefix, const char* pMessage, void* pUserData)
+    const char* pLayerPrefix, const char* pMessage, void* pUserData)
 {
-	Log(false, "LAYER_VALIDATION: %s", pMessage);
+    Log(false, "LAYER_VALIDATION: %s", pMessage);
 
-	return VK_FALSE;
+    return VK_FALSE;
 }
 #endif
 
 #ifdef VK_USE_PLATFORM_XLIB_KHR
 VKAPI_ATTR VkBool32 VKAPI_CALL CustomDebugReportCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode,
-	const char* pLayerPrefix, const char* pMessage, void* pUserData)
+    const char* pLayerPrefix, const char* pMessage, void* pUserData)
 {
-	LOGE("LAYER_VALIDATION: %s\n", pMessage);
+    LOGE("LAYER_VALIDATION: %s\n", pMessage);
 
-	return VK_FALSE;
+    return VK_FALSE;
 }
 #endif

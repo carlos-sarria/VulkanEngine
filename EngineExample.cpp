@@ -5,7 +5,7 @@
 \Copyright    Copyright(c) Imagination Technologies Limited.
 \brief        Build an introductory Vulkan application to show the process of getting started with Vulkan.
 ***********************************************************************************************************************/
-#include "VulkanEngine.h"
+#include "EngineExample.h"
 
 /// <summary>Executes the recorded command buffers. The recorded operations will end up rendering and presenting the frame to the surface</summary>
 void VulkanHelloAPI::drawFrame()

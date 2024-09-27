@@ -2,7 +2,6 @@
 #define VKDEVICE_H
 
 #include "vkStructs.h"
-#include "vk_getProcAddrs.h"
 
 /// <summary>Creates a Vulkan instance</summary>
 /// <param name="extensionNames">Vector of the names of the required instance-level extensions</param>

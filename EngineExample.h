@@ -11,8 +11,7 @@
 #include <limits>
 #include <sstream>
 
-#include "MainWindows.h"
-
+#define VK_USE_PLATFORM_WIN32_KHR
 #include "vkEngine.h"
 
 // Constants used throughout the example.

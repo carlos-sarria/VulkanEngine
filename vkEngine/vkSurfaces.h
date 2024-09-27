@@ -2,7 +2,6 @@
 #define VKSURFACES_H
 
 #include <limits>
-#include "MainWindows.h"
 #include "vkStructs.h"
 
 // currentBuffer will be used to point to the correct frame/command buffer/uniform buffer data.
