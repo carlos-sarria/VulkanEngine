@@ -26,6 +26,7 @@ public:
 
     AppManager appManager;
     SurfaceData surfaceData;
+    VkResult lastRes; // ??? Crashes if removed, first time there is a Log call
 
     void initialize() {
         _initialize(appManager,surfaceData);
@@ -165,6 +166,14 @@ public:
 
     void initUniformBuffers(){
         _initUniformBuffers(appManager);
+    }
+
+    uint32_t startCurrentBuffer(){
+        _startCurrentBuffer(appManager);
+    }
+
+    uint32_t presentCurrentBuffer(){
+        _presentCurrentBuffer(appManager);
     }
 
 private:

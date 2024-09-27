@@ -10,62 +10,11 @@
 /// <summary>Executes the recorded command buffers. The recorded operations will end up rendering and presenting the frame to the surface</summary>
 void VulkanHelloAPI::drawFrame()
 {
-	// This is where the recorded command buffers are executed. The recorded operations will end up rendering
-	// and presenting the frame to the surface.
+    eng.startCurrentBuffer();
 
-	// currentBuffer will be used to point to the correct frame/command buffer/uniform buffer data.
-	// It is going to be the general index of the data being worked on.
-	uint32_t currentBuffer = 0;
-	VkPipelineStageFlags pipe_stage_flags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    applyRotation(eng.appManager.frameId);
 
-	// Acquire and get the index of the next available swapchain image.
-	debugAssertFunctionResult(
-        vk::AcquireNextImageKHR(eng.appManager.device, eng.appManager.swapchain, std::numeric_limits<uint64_t>::max(), eng.appManager.acquireSemaphore[frameId], VK_NULL_HANDLE, &currentBuffer),
-		"Draw - Acquire Image");
-
-	// Wait for the fence to be signalled before starting to render the current frame, then reset it so it can be reused.
-    debugAssertFunctionResult(vk::WaitForFences(eng.appManager.device, 1, &eng.appManager.frameFences[currentBuffer], true, FENCE_TIMEOUT), "Fence - Signalled");
-
-    vk::ResetFences(eng.appManager.device, 1, &eng.appManager.frameFences[currentBuffer]);
-
-	// Use a helper function with the current frame index to calculate the transformation matrix and write it into the correct
-	// slice of the uniform buffer.
-	applyRotation(currentBuffer);
-
-	// Submit the command buffer to the queue to start rendering.
-	// The command buffer is submitted to the graphics queue which was created earlier.
-	// Notice the wait (acquire) and signal (present) semaphores, and the fence.
-	VkSubmitInfo submitInfo = {};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	submitInfo.pNext = nullptr;
-	submitInfo.pWaitDstStageMask = &pipe_stage_flags;
-	submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = &eng.appManager.acquireSemaphore[frameId];
-	submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = &eng.appManager.presentSemaphores[frameId];
-	submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &eng.appManager.cmdBuffers[currentBuffer];
-
-    debugAssertFunctionResult(vk::QueueSubmit(eng.appManager.graphicQueue, 1, &submitInfo, eng.appManager.frameFences[currentBuffer]), "Draw - Submit to Graphic Queue");
-
-	// Queue the rendered image for presentation to the surface.
-	// The currentBuffer is again used to select the correct swapchain images to present. A wait
-	// semaphore is also set here which will be signalled when the command buffer has
-	// finished execution.
-	VkPresentInfoKHR presentInfo;
-	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-	presentInfo.pNext = nullptr;
-	presentInfo.swapchainCount = 1;
-    presentInfo.pSwapchains = &eng.appManager.swapchain;
-	presentInfo.pImageIndices = &currentBuffer;
-    presentInfo.pWaitSemaphores = &eng.appManager.presentSemaphores[frameId];
-	presentInfo.waitSemaphoreCount = 1;
-	presentInfo.pResults = nullptr;
-
-    debugAssertFunctionResult(vk::QueuePresentKHR(eng.appManager.presentQueue, &presentInfo), "Draw - Submit to Present Queue");
-
-	// Update the frameId to get the next suitable one.
-    frameId = (frameId + 1) % eng.appManager.swapChainImages.size();
+    eng.presentCurrentBuffer();
 }
 
 
@@ -160,10 +109,6 @@ void VulkanHelloAPI::initialize()
 {
 	// All the Vulkan objects are initialised here.
 	// The vk::initVulkan() function is used to load the Vulkan library and definitions.
-
-	// frameId is the index that will be used for synchronisation. It is going to be used mostly by
-	// fences and semaphores to keep track of which one is currently free to work on.
-	frameId = 0;
 
     // eng.appManager holds all the object handles which need to be accessed "globally" such as the angle
 	// of the rotation of the triangle that is going to be rendered on screen.

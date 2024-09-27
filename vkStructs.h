@@ -89,6 +89,9 @@ struct AppManager
 
     float angle;
     uint32_t offset;
+
+    int frameId;
+    uint32_t currentBuffer;
 };
 
 struct Vertex

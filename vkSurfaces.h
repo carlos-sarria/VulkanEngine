@@ -1,8 +1,65 @@
 #ifndef VKSURFACES_H
 #define VKSURFACES_H
 
+#include <limits>
 #include "MainWindows.h"
 #include "vkStructs.h"
+
+// currentBuffer will be used to point to the correct frame/command buffer/uniform buffer data.
+// It is going to be the general index of the data being worked on.
+inline void _startCurrentBuffer(AppManager& appManager)
+{
+    VkPipelineStageFlags pipe_stage_flags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
+    // Acquire and get the index of the next available swapchain image.
+    debugAssertFunctionResult(
+        vk::AcquireNextImageKHR(appManager.device, appManager.swapchain, std::numeric_limits<uint64_t>::max(), appManager.acquireSemaphore[appManager.frameId], VK_NULL_HANDLE, & appManager.currentBuffer),
+        "Draw - Acquire Image");
+
+    // Wait for the fence to be signalled before starting to render the current frame, then reset it so it can be reused.
+    debugAssertFunctionResult(vk::WaitForFences(appManager.device, 1, &appManager.frameFences[appManager.currentBuffer], true, FENCE_TIMEOUT), "Fence - Signalled");
+
+    vk::ResetFences(appManager.device, 1, &appManager.frameFences[appManager.currentBuffer]);
+}
+
+// Submit the command buffer to the queue to start rendering.
+// The command buffer is submitted to the graphics queue which was created earlier.
+// Notice the wait (acquire) and signal (present) semaphores, and the fence.
+inline void _presentCurrentBuffer(AppManager& appManager){
+
+    VkPipelineStageFlags pipe_stage_flags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    VkSubmitInfo submitInfo = {};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.pNext = nullptr;
+    submitInfo.pWaitDstStageMask = &pipe_stage_flags;
+    submitInfo.waitSemaphoreCount = 1;
+    submitInfo.pWaitSemaphores = &appManager.acquireSemaphore[appManager.frameId];
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pSignalSemaphores = &appManager.presentSemaphores[appManager.frameId];
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &appManager.cmdBuffers[appManager.currentBuffer];
+
+    debugAssertFunctionResult(vk::QueueSubmit(appManager.graphicQueue, 1, &submitInfo, appManager.frameFences[appManager.currentBuffer]), "Draw - Submit to Graphic Queue");
+
+    // Queue the rendered image for presentation to the surface.
+    // The currentBuffer is again used to select the correct swapchain images to present. A wait
+    // semaphore is also set here which will be signalled when the command buffer has
+    // finished execution.
+    VkPresentInfoKHR presentInfo;
+    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    presentInfo.pNext = nullptr;
+    presentInfo.swapchainCount = 1;
+    presentInfo.pSwapchains = &appManager.swapchain;
+    presentInfo.pImageIndices = &appManager.currentBuffer;
+    presentInfo.pWaitSemaphores = &appManager.presentSemaphores[appManager.frameId];
+    presentInfo.waitSemaphoreCount = 1;
+    presentInfo.pResults = nullptr;
+
+    debugAssertFunctionResult(vk::QueuePresentKHR(appManager.presentQueue, &presentInfo), "Draw - Submit to Present Queue");
+
+    // Update the appManager.frameId to get the next suitable one.
+    appManager.frameId = (appManager.frameId + 1) % appManager.swapChainImages.size();
+}
 
 /// <summary>Creates a number of framebuffer objects equal to the number of images in the swapchain</summary>
 inline void _initFrameBuffers(AppManager& appManager)
@@ -175,7 +232,7 @@ inline void _initSurface(AppManager& appManager, SurfaceData& surfaceData)
 
     VkDisplayPropertiesKHR properties;
     uint32_t propertiesCount = 1;
-    if (vk::GetPhysicalDeviceDisplayPropertiesKHR) { lastRes = vk::GetPhysicalDeviceDisplayPropertiesKHR(appManager.physicalDevice, &propertiesCount, &properties); }
+    if (vk::GetPhysicalDeviceDisplayPropertiesKHR) { vk::GetPhysicalDeviceDisplayPropertiesKHR(appManager.physicalDevice, &propertiesCount, &properties); }
 
     std::string supportedTransforms;
     if (properties.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR) { supportedTransforms.append("none "); }

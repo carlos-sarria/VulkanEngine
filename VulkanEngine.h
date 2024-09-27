@@ -31,6 +31,8 @@ private:
 
 public:
 
+    vkEngine eng;
+
 	// Changes the rotation of the per-frame uniform buffer.
 	void applyRotation(int idx = 0);
 
@@ -42,12 +44,4 @@ public:
 
 	// Execute the command buffer and present the result to the surface.
 	void drawFrame();
-
-    vkEngine eng;
-
-	// Used for debugging mostly; to show the VKResult return from the Vulkan function calls.
-	VkResult lastRes;
-
-	// Keeps track of the frame for synchronisation purposes.
-	int frameId;
 };
