@@ -7,7 +7,7 @@
 /// <summary>Creates a Vulkan instance</summary>
 /// <param name="extensionNames">Vector of the names of the required instance-level extensions</param>
 /// <param name="layerNames">Vector of the names of the required validation layers</param>
-static void initApplicationAndInstance(AppManager& appManager, std::vector<std::string>& extensionNames, std::vector<std::string>& layerNames)
+inline void _initApplicationAndInstance(AppManager& appManager, std::vector<std::string>& extensionNames, std::vector<std::string>& layerNames)
 {
     // This is where the Vulkan instance is created. Vulkan does not have a global state like OpenGL, so a
     // handle is required to access its functions. The instance is the primary access to the API.
@@ -98,7 +98,7 @@ static void initApplicationAndInstance(AppManager& appManager, std::vector<std::
 
 /// <summary>Finds a physical device which is compatible with the applications's requirements</summary>
 /// <returns>Handle to a compatible physical device</returns>
-static VkPhysicalDevice getCompatibleDevice(AppManager& appManager)
+inline VkPhysicalDevice _getCompatibleDevice(AppManager& appManager)
 {
     // Iterate through the available physical devices to determine which one is compatible with the application's requirements.
 
@@ -125,7 +125,7 @@ static VkPhysicalDevice getCompatibleDevice(AppManager& appManager)
 }
 
 /// <summary>Selects the physical device most compatible with application requirements</summary>
-static void initPhysicalDevice(AppManager& appManager)
+inline void _initPhysicalDevice(AppManager& appManager)
 {
     // Concept: Physical Devices
     // A physical device needs to be chosen. A physical device represents a GPU used for operations.
@@ -165,7 +165,7 @@ static void initPhysicalDevice(AppManager& appManager)
 
     // Get the device compatible with the needs of the application using a custom helper function.
     // The physical device is also queried for its memory properties which will be used later when allocating memory for buffers.
-    appManager.physicalDevice = getCompatibleDevice(appManager);
+    appManager.physicalDevice = _getCompatibleDevice(appManager);
     vk::GetPhysicalDeviceMemoryProperties(appManager.physicalDevice, &appManager.deviceMemoryProperties);
 
     // Get the compatible device's properties.
@@ -175,7 +175,7 @@ static void initPhysicalDevice(AppManager& appManager)
 
 /// <summary>Creates a Vulkan logical device</summary>
 /// <param name="deviceExtensions">Vector of the names of the required device-level extensions</param>
-void initLogicalDevice(AppManager& appManager, std::vector<std::string>& deviceExtensions)
+inline void _initLogicalDevice(AppManager& appManager, std::vector<std::string>& deviceExtensions)
 {
     // A logical device is required to start using the API. This function creates a logical device
     // and a graphics queue to execute commands on.

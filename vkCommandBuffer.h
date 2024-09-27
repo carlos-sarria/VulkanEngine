@@ -4,7 +4,7 @@
 #include "vkStructs.h"
 
 /// <summary>Creates a command pool and then allocates out of it a number of command buffers equal to the number of swapchain images</summary>
-void initCommandPoolAndBuffer(AppManager& appManager)
+inline void _initCommandPoolAndBuffer(AppManager& appManager)
 {
     // This function creates a command pool to reserve memory for the command buffers are created to execute commands.
     // After the command pool is created, command buffers are allocated from it. A number of command buffers equal to
@@ -38,7 +38,7 @@ void initCommandPoolAndBuffer(AppManager& appManager)
 }
 
 /// <summary>Records rendering commands to the command buffers</summary>
-void recordCommandBuffer(AppManager& appManager)
+inline void _recordCommandBuffer(AppManager& appManager)
 {
     // Concept: Command Buffers
     // Command buffers are containers that contain GPU commands. They are passed to the queues to be executed on the device.

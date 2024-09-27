@@ -5,7 +5,7 @@
 #include "vkMemory.h"
 
 /// <summary>Generates a checkered texture on-the-fly</summary>
-void generateTexture(AppManager& appManager)
+inline void _generateTexture(AppManager& appManager)
 {
     // This function will generate a checkered texture on the fly to be used on the triangle that is going
     // to be rendered and rotated on screen.
@@ -27,7 +27,7 @@ void generateTexture(AppManager& appManager)
 }
 
 /// <summary>Initialises the images of a previously created swapchain and creates an associated image view for each image</summary>
-static void initImagesAndViews(AppManager& appManager)
+inline void _initImagesAndViews(AppManager& appManager)
 {
     // Concept: Images and Views
     // Images in Vulkan are the object representation of data. It can take many forms such as attachments, textures, and so on.
@@ -84,7 +84,7 @@ static void initImagesAndViews(AppManager& appManager)
 }
 
 /// <summary>Creates a texture image (VkImage) and maps it into GPU memory</summary>
-static void loadTexture(AppManager& appManager)
+inline void _loadTexture(AppManager& appManager)
 {
     // In Vulkan, uploading an image requires multiple steps:
 
@@ -113,7 +113,7 @@ static void loadTexture(AppManager& appManager)
     appManager.texture.data.resize(appManager.texture.textureDimensions.width * appManager.texture.textureDimensions.height * 4);
 
     // This function generates a texture pattern on-the-fly into a block of CPU-side memory: appManager.texture.data.
-    generateTexture(appManager);
+    _generateTexture(appManager);
 
     // The BufferData struct has been defined in this application to hold the necessary data for the staging buffer.
     BufferData stagingBufferData;
@@ -121,7 +121,7 @@ static void loadTexture(AppManager& appManager)
 
     // Use the buffer creation function to generate a staging buffer. The VK_BUFFER_USAGE_TRANSFER_SRC_BIT flag is passed to specify that the buffer
     // is going to be used as the source buffer of a transfer command.
-    createBuffer(appManager, stagingBufferData, appManager.texture.data.data(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    _createBuffer(appManager, stagingBufferData, appManager.texture.data.data(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
 
     // Create the image object.
     // The format is set to the most common format, R8G8B8_UNORM, 8-bits per channel, unsigned, and normalised.
@@ -163,7 +163,7 @@ static void loadTexture(AppManager& appManager)
 
     // This helper function queries available memory types to find memory with the features that are suitable for a sampled
     // image. Device Local memory is the preferred choice.
-    getMemoryTypeFromProperties(appManager.deviceMemoryProperties, memoryRequirments.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &(allocateInfo.memoryTypeIndex));
+    _getMemoryTypeFromProperties(appManager.deviceMemoryProperties, memoryRequirments.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &(allocateInfo.memoryTypeIndex));
 
     // Use all of this information to allocate memory with the correct features for the image and bind the memory to the texture buffer.
     debugAssertFunctionResult(vk::AllocateMemory(appManager.device, &allocateInfo, nullptr, &appManager.texture.memory), "Texture Image Memory Allocation");

@@ -5,7 +5,7 @@
 
 /// <summary>Selects required instance-level extensions</summary>
 /// <returns>Vector of the names of required instance-level extensions</returns>
-static std::vector<std::string> initInstanceExtensions()
+inline std::vector<std::string> _initInstanceExtensions()
 {
     // Concept: Extensions
     // Extensions extend the API's functionality; they may add additional features or commands. They can be used for a variety of purposes,
@@ -52,7 +52,7 @@ static std::vector<std::string> initInstanceExtensions()
 
 /// <summary>Selects required device-level extensions</summary>
 /// <returns>Vector of the names of required device-level extensions</returns>
-static std::vector<std::string> initDeviceExtensions()
+inline std::vector<std::string> _initDeviceExtensions()
 {
     // The VK_KHR_swapchain extension is device-level. The device-level extension names are stored in a
     // separate vector from the instance-level extension names.

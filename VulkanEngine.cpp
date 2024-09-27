@@ -7,22 +7,6 @@
 ***********************************************************************************************************************/
 #include "VulkanEngine.h"
 
-#include "vkLayers.h"
-#include "vkExtensions.h"
-#include "vkInit.h"
-#include "vkQueues.h"
-#include "vkSurfaces.h"
-#include "vkMemory.h"
-#include "vkTextures.h"
-#include "vkShaders.h"
-#include "vkGeometry.h"
-#include "vkRenderPass.h"
-#include "vkDescriptor.h"
-#include "vkPipeline.h"
-#include "vkFences.h"
-#include "vkCommandBuffer.h"
-
-
 /// <summary>Executes the recorded command buffers. The recorded operations will end up rendering and presenting the frame to the surface</summary>
 void VulkanHelloAPI::drawFrame()
 {
@@ -36,13 +20,13 @@ void VulkanHelloAPI::drawFrame()
 
 	// Acquire and get the index of the next available swapchain image.
 	debugAssertFunctionResult(
-		vk::AcquireNextImageKHR(appManager.device, appManager.swapchain, std::numeric_limits<uint64_t>::max(), appManager.acquireSemaphore[frameId], VK_NULL_HANDLE, &currentBuffer),
+        vk::AcquireNextImageKHR(eng.appManager.device, eng.appManager.swapchain, std::numeric_limits<uint64_t>::max(), eng.appManager.acquireSemaphore[frameId], VK_NULL_HANDLE, &currentBuffer),
 		"Draw - Acquire Image");
 
 	// Wait for the fence to be signalled before starting to render the current frame, then reset it so it can be reused.
-	debugAssertFunctionResult(vk::WaitForFences(appManager.device, 1, &appManager.frameFences[currentBuffer], true, FENCE_TIMEOUT), "Fence - Signalled");
+    debugAssertFunctionResult(vk::WaitForFences(eng.appManager.device, 1, &eng.appManager.frameFences[currentBuffer], true, FENCE_TIMEOUT), "Fence - Signalled");
 
-	vk::ResetFences(appManager.device, 1, &appManager.frameFences[currentBuffer]);
+    vk::ResetFences(eng.appManager.device, 1, &eng.appManager.frameFences[currentBuffer]);
 
 	// Use a helper function with the current frame index to calculate the transformation matrix and write it into the correct
 	// slice of the uniform buffer.
@@ -56,13 +40,13 @@ void VulkanHelloAPI::drawFrame()
 	submitInfo.pNext = nullptr;
 	submitInfo.pWaitDstStageMask = &pipe_stage_flags;
 	submitInfo.waitSemaphoreCount = 1;
-	submitInfo.pWaitSemaphores = &appManager.acquireSemaphore[frameId];
+    submitInfo.pWaitSemaphores = &eng.appManager.acquireSemaphore[frameId];
 	submitInfo.signalSemaphoreCount = 1;
-	submitInfo.pSignalSemaphores = &appManager.presentSemaphores[frameId];
+    submitInfo.pSignalSemaphores = &eng.appManager.presentSemaphores[frameId];
 	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &appManager.cmdBuffers[currentBuffer];
+    submitInfo.pCommandBuffers = &eng.appManager.cmdBuffers[currentBuffer];
 
-	debugAssertFunctionResult(vk::QueueSubmit(appManager.graphicQueue, 1, &submitInfo, appManager.frameFences[currentBuffer]), "Draw - Submit to Graphic Queue");
+    debugAssertFunctionResult(vk::QueueSubmit(eng.appManager.graphicQueue, 1, &submitInfo, eng.appManager.frameFences[currentBuffer]), "Draw - Submit to Graphic Queue");
 
 	// Queue the rendered image for presentation to the surface.
 	// The currentBuffer is again used to select the correct swapchain images to present. A wait
@@ -72,16 +56,16 @@ void VulkanHelloAPI::drawFrame()
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 	presentInfo.pNext = nullptr;
 	presentInfo.swapchainCount = 1;
-	presentInfo.pSwapchains = &appManager.swapchain;
+    presentInfo.pSwapchains = &eng.appManager.swapchain;
 	presentInfo.pImageIndices = &currentBuffer;
-	presentInfo.pWaitSemaphores = &appManager.presentSemaphores[frameId];
+    presentInfo.pWaitSemaphores = &eng.appManager.presentSemaphores[frameId];
 	presentInfo.waitSemaphoreCount = 1;
 	presentInfo.pResults = nullptr;
 
-	debugAssertFunctionResult(vk::QueuePresentKHR(appManager.presentQueue, &presentInfo), "Draw - Submit to Present Queue");
+    debugAssertFunctionResult(vk::QueuePresentKHR(eng.appManager.presentQueue, &presentInfo), "Draw - Submit to Present Queue");
 
 	// Update the frameId to get the next suitable one.
-	frameId = (frameId + 1) % appManager.swapChainImages.size();
+    frameId = (frameId + 1) % eng.appManager.swapChainImages.size();
 }
 
 
@@ -141,34 +125,34 @@ void VulkanHelloAPI::applyRotation(int idx)
 	// An offset is used to point to the correct slice of the buffer that corresponds to the current
 	// frame. The current frame is specified by the parameter, idx.
 	// This memory is mapped persistently so it does not need to be mapped again on every frame. The pointer to this
-	// consistently mapped memory is the variable appManager.dynamicUniformBufferData.mappedData.
+    // consistently mapped memory is the variable eng.appManager.dynamicUniformBufferData.mappedData.
 
 	// Calculate the offset.
-	VkDeviceSize offset = (appManager.offset * idx);
+    VkDeviceSize offset = (eng.appManager.offset * idx);
 
 	// Update the angle of rotation and calculate the transformation matrix using the fixed projection
 	// matrix and a freshly-calculated rotation matrix.
-	appManager.angle += 0.02f;
+    eng.appManager.angle += 0.02f;
 
 	auto rotation = std::array<std::array<float, 4>, 4>();
-	rotateAroundZ(appManager.angle, rotation);
+    rotateAroundZ(eng.appManager.angle, rotation);
 
 	auto mvp = std::array<std::array<float, 4>, 4>();
 	multiplyMatrices(rotation, viewProj, mvp);
 
 	// Copy the matrix to the mapped memory using the offset calculated above.
-	memcpy(static_cast<unsigned char*>(appManager.dynamicUniformBufferData.mappedData) + appManager.dynamicUniformBufferData.bufferInfo.range * idx, &mvp, sizeof(mvp));
+    memcpy(static_cast<unsigned char*>(eng.appManager.dynamicUniformBufferData.mappedData) + eng.appManager.dynamicUniformBufferData.bufferInfo.range * idx, &mvp, sizeof(mvp));
 
 	VkMappedMemoryRange mapMemRange = {
 		VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE,
 		nullptr,
-		appManager.dynamicUniformBufferData.memory,
+        eng.appManager.dynamicUniformBufferData.memory,
 		offset,
-		appManager.dynamicUniformBufferData.bufferInfo.range,
+        eng.appManager.dynamicUniformBufferData.bufferInfo.range,
 	};
 
 	// ONLY flush the memory if it does not support VK_MEMORY_PROPERTY_HOST_COHERENT_BIT.
-	if ((appManager.dynamicUniformBufferData.memPropFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) == 0) { vk::FlushMappedMemoryRanges(appManager.device, 1, &mapMemRange); }
+    if ((eng.appManager.dynamicUniformBufferData.memPropFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) == 0) { vk::FlushMappedMemoryRanges(eng.appManager.device, 1, &mapMemRange); }
 }
 
 /// <summary>Initialises all Vulkan objects</summary>
@@ -181,53 +165,53 @@ void VulkanHelloAPI::initialize()
 	// fences and semaphores to keep track of which one is currently free to work on.
 	frameId = 0;
 
-	// appManager holds all the object handles which need to be accessed "globally" such as the angle
+    // eng.appManager holds all the object handles which need to be accessed "globally" such as the angle
 	// of the rotation of the triangle that is going to be rendered on screen.
-	appManager.angle = 45.0f;
+    eng.appManager.angle = 45.0f;
 
 	// Initialise all the pointers to Vulkan functions.
 	vk::initVulkan();
 
 	// Initialise all the Vulkan objects required to begin rendering.
-	std::vector<std::string> layers = initLayers();
-    std::vector<std::string> instanceExtensions = initInstanceExtensions();
+    std::vector<std::string> layers = eng.initLayers();
+    std::vector<std::string> instanceExtensions = eng.initInstanceExtensions();
 
-    initApplicationAndInstance(appManager, instanceExtensions, layers);
-    initPhysicalDevice(appManager);
+    eng.initApplicationAndInstance(instanceExtensions, layers);
+    eng.initPhysicalDevice();
 
-    initSurface(appManager, surfaceData);
+    eng.initSurface();
 
-    initQueuesFamilies(appManager);
+    eng.initQueuesFamilies();
 
-	std::vector<std::string> deviceExtensions = initDeviceExtensions();
+    std::vector<std::string> deviceExtensions = eng.initDeviceExtensions();
 
-    initLogicalDevice(appManager, deviceExtensions);
-    initQueues(appManager);
-    initSwapChain(appManager, surfaceData);
-    initImagesAndViews(appManager);
-    initCommandPoolAndBuffer(appManager);
+    eng.initLogicalDevice(deviceExtensions);
+    eng.initQueues();
+    eng.initSwapChain();
+    eng.initImagesAndViews();
+    eng.initCommandPoolAndBuffer();
 
-    initShaders(appManager);
-    initVertexBuffers(appManager);
-    initUniformBuffers(appManager);
-    initRenderPass(appManager);
-    loadTexture(appManager);
-    initDescriptorPoolAndSet(appManager);
+    eng.initShaders();
+    eng.initVertexBuffers();
+    eng.initUniformBuffers();
+    eng.initRenderPass();
+    eng.loadTexture();
+    eng.initDescriptorPoolAndSet();
 
-    initFrameBuffers(appManager);
-    initPipeline(appManager);
+    eng.initFrameBuffers();
+    eng.initPipeline();
 
-    initViewportAndScissor(appManager, surfaceData);
-    initSemaphoreAndFence(appManager);
+    eng.initViewportAndScissor();
+    eng.initSemaphoreAndFence();
 
-    recordCommandBuffer(appManager);
+    eng.recordCommandBuffer();
 
 	float aspect = 0.0f;
 	// The screen is rotated.
-	if (surfaceData.width < surfaceData.height) { aspect = surfaceData.height / surfaceData.width; }
+    if (eng.surfaceData.width < eng.surfaceData.height) { aspect = eng.surfaceData.height / eng.surfaceData.width; }
 	else
 	{
-		aspect = surfaceData.width / surfaceData.height;
+        aspect = eng.surfaceData.width / eng.surfaceData.height;
 	}
 
 	float left = aspect;
@@ -250,76 +234,76 @@ void VulkanHelloAPI::deinitialize()
 	// is left "open" when the application is closed.
 
 	// Wait for the device to have finished all operations before starting the clean up.
-	debugAssertFunctionResult(vk::DeviceWaitIdle(appManager.device), "Device Wait for Idle");
+    debugAssertFunctionResult(vk::DeviceWaitIdle(eng.appManager.device), "Device Wait for Idle");
 
 	// Destroy the fence used to sync work between the CPU and GPU.
-	vk::WaitForFences(appManager.device, static_cast<uint32_t>(appManager.frameFences.size()), appManager.frameFences.data(), true, uint64_t(-1));
-	vk::ResetFences(appManager.device, static_cast<uint32_t>(appManager.frameFences.size()), appManager.frameFences.data());
-	for (auto& fence : appManager.frameFences) { vk::DestroyFence(appManager.device, fence, nullptr); }
+    vk::WaitForFences(eng.appManager.device, static_cast<uint32_t>(eng.appManager.frameFences.size()), eng.appManager.frameFences.data(), true, uint64_t(-1));
+    vk::ResetFences(eng.appManager.device, static_cast<uint32_t>(eng.appManager.frameFences.size()), eng.appManager.frameFences.data());
+    for (auto& fence : eng.appManager.frameFences) { vk::DestroyFence(eng.appManager.device, fence, nullptr); }
 
 	// Destroy the semaphores used for image acquisition and rendering.
-	for (auto& semaphore : appManager.acquireSemaphore) { vk::DestroySemaphore(appManager.device, semaphore, nullptr); }
+    for (auto& semaphore : eng.appManager.acquireSemaphore) { vk::DestroySemaphore(eng.appManager.device, semaphore, nullptr); }
 
-	for (auto& semaphore : appManager.presentSemaphores) { vk::DestroySemaphore(appManager.device, semaphore, nullptr); }
+    for (auto& semaphore : eng.appManager.presentSemaphores) { vk::DestroySemaphore(eng.appManager.device, semaphore, nullptr); }
 
 	// Free the memory allocated for the descriptor sets.
-	vk::FreeDescriptorSets(appManager.device, appManager.descriptorPool, 1, &appManager.staticDescSet);
-	vk::FreeDescriptorSets(appManager.device, appManager.descriptorPool, 1, &appManager.dynamicDescSet);
+    vk::FreeDescriptorSets(eng.appManager.device, eng.appManager.descriptorPool, 1, &eng.appManager.staticDescSet);
+    vk::FreeDescriptorSets(eng.appManager.device, eng.appManager.descriptorPool, 1, &eng.appManager.dynamicDescSet);
 
 	// Destroy both the descriptor layouts and descriptor pool.
-	vk::DestroyDescriptorSetLayout(appManager.device, appManager.staticDescriptorSetLayout, nullptr);
-	vk::DestroyDescriptorSetLayout(appManager.device, appManager.dynamicDescriptorSetLayout, nullptr);
-	vk::DestroyDescriptorPool(appManager.device, appManager.descriptorPool, nullptr);
+    vk::DestroyDescriptorSetLayout(eng.appManager.device, eng.appManager.staticDescriptorSetLayout, nullptr);
+    vk::DestroyDescriptorSetLayout(eng.appManager.device, eng.appManager.dynamicDescriptorSetLayout, nullptr);
+    vk::DestroyDescriptorPool(eng.appManager.device, eng.appManager.descriptorPool, nullptr);
 
 	// Destroy the uniform buffer and free the memory.
-	vk::DestroyBuffer(appManager.device, appManager.dynamicUniformBufferData.buffer, nullptr);
-	vk::FreeMemory(appManager.device, appManager.dynamicUniformBufferData.memory, nullptr);
+    vk::DestroyBuffer(eng.appManager.device, eng.appManager.dynamicUniformBufferData.buffer, nullptr);
+    vk::FreeMemory(eng.appManager.device, eng.appManager.dynamicUniformBufferData.memory, nullptr);
 
 	// Destroy the pipeline followed by the pipeline layout.
-	vk::DestroyPipeline(appManager.device, appManager.pipeline, nullptr);
-	vk::DestroyPipelineLayout(appManager.device, appManager.pipelineLayout, nullptr);
+    vk::DestroyPipeline(eng.appManager.device, eng.appManager.pipeline, nullptr);
+    vk::DestroyPipelineLayout(eng.appManager.device, eng.appManager.pipelineLayout, nullptr);
 
 	// Destroy the texture image.
-	vk::DestroyImage(appManager.device, appManager.texture.image, nullptr);
+    vk::DestroyImage(eng.appManager.device, eng.appManager.texture.image, nullptr);
 
 	// Destroy the texture image view.
-	vk::DestroyImageView(appManager.device, appManager.texture.view, nullptr);
+    vk::DestroyImageView(eng.appManager.device, eng.appManager.texture.view, nullptr);
 
 	// Free the memory allocated for the texture.
-	vk::FreeMemory(appManager.device, appManager.texture.memory, nullptr);
+    vk::FreeMemory(eng.appManager.device, eng.appManager.texture.memory, nullptr);
 
 	// Destroy the sampler.
-	vk::DestroySampler(appManager.device, appManager.texture.sampler, nullptr);
+    vk::DestroySampler(eng.appManager.device, eng.appManager.texture.sampler, nullptr);
 
 	// Destroy then free the memory for the vertex buffer.
-	vk::DestroyBuffer(appManager.device, appManager.vertexBuffer.buffer, nullptr);
-	vk::FreeMemory(appManager.device, appManager.vertexBuffer.memory, nullptr);
+    vk::DestroyBuffer(eng.appManager.device, eng.appManager.vertexBuffer.buffer, nullptr);
+    vk::FreeMemory(eng.appManager.device, eng.appManager.vertexBuffer.memory, nullptr);
 
 	// Iterate through each of the framebuffers and destroy them.
-	for (uint32_t i = 0; i < appManager.frameBuffers.size(); i++) { vk::DestroyFramebuffer(appManager.device, appManager.frameBuffers[i], nullptr); }
+    for (uint32_t i = 0; i < eng.appManager.frameBuffers.size(); i++) { vk::DestroyFramebuffer(eng.appManager.device, eng.appManager.frameBuffers[i], nullptr); }
 
 	// Destroy the two shader modules - vertex and fragment.
-	vk::DestroyShaderModule(appManager.device, appManager.shaderStages[0].module, nullptr);
-	vk::DestroyShaderModule(appManager.device, appManager.shaderStages[1].module, nullptr);
+    vk::DestroyShaderModule(eng.appManager.device, eng.appManager.shaderStages[0].module, nullptr);
+    vk::DestroyShaderModule(eng.appManager.device, eng.appManager.shaderStages[1].module, nullptr);
 
 	// Destroy the render pass.
-	vk::DestroyRenderPass(appManager.device, appManager.renderPass, nullptr);
+    vk::DestroyRenderPass(eng.appManager.device, eng.appManager.renderPass, nullptr);
 
 	// Clean up the swapchain image views.
-	for (auto& imagebuffers : appManager.swapChainImages) { vk::DestroyImageView(appManager.device, imagebuffers.view, nullptr); }
+    for (auto& imagebuffers : eng.appManager.swapChainImages) { vk::DestroyImageView(eng.appManager.device, imagebuffers.view, nullptr); }
 
 	// Free the allocated memory in the command buffers.
-	vk::FreeCommandBuffers(appManager.device, appManager.commandPool, static_cast<uint32_t>(appManager.cmdBuffers.size()), appManager.cmdBuffers.data());
+    vk::FreeCommandBuffers(eng.appManager.device, eng.appManager.commandPool, static_cast<uint32_t>(eng.appManager.cmdBuffers.size()), eng.appManager.cmdBuffers.data());
 
 	// Destroy the command pool.
-	vk::DestroyCommandPool(appManager.device, appManager.commandPool, nullptr);
+    vk::DestroyCommandPool(eng.appManager.device, eng.appManager.commandPool, nullptr);
 
 	// Clean up the swapchain.
-	vk::DestroySwapchainKHR(appManager.device, appManager.swapchain, nullptr);
+    vk::DestroySwapchainKHR(eng.appManager.device, eng.appManager.swapchain, nullptr);
 
 	// Clean up the surface.
-	vk::DestroySurfaceKHR(appManager.instance, appManager.surface, nullptr);
+    vk::DestroySurfaceKHR(eng.appManager.instance, eng.appManager.surface, nullptr);
 
 	// Destroy the logical device.
-	vk::DestroyDevice(appManager.device, nullptr);
+    vk::DestroyDevice(eng.appManager.device, nullptr);
 }

@@ -11,10 +11,9 @@
 #include <limits>
 #include <sstream>
 
-#include "vk_getProcAddrs.h"
 #include "MainWindows.h"
 
-#include "vkStructs.h"
+#include "vkEngine.h"
 
 // Constants used throughout the example.
 #define FENCE_TIMEOUT std::numeric_limits<uint64_t>::max()
@@ -32,9 +31,6 @@ private:
 
 public:
 
-	// Generic method for creating a shader module.
-	void createShaderModule(const uint32_t* spvShader, size_t spvShaderSize, int indx, VkShaderStageFlagBits shaderStage);
-
 	// Changes the rotation of the per-frame uniform buffer.
 	void applyRotation(int idx = 0);
 
@@ -47,15 +43,11 @@ public:
 	// Execute the command buffer and present the result to the surface.
 	void drawFrame();
 
-	// Holds all the Vulkan handles that global access is required for.
-	AppManager appManager;
+    vkEngine eng;
 
 	// Used for debugging mostly; to show the VKResult return from the Vulkan function calls.
 	VkResult lastRes;
 
 	// Keeps track of the frame for synchronisation purposes.
 	int frameId;
-
-	// Surface data needed to distinguish between the different platforms.
-	SurfaceData surfaceData;
 };

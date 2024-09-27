@@ -6,7 +6,7 @@
 /// <summary>Finds the indices of compatible graphics and present queues and returns them</summary>
 /// <param name="graphicsfamilyindex">Compatible graphics queue index that is returned</param>
 /// <param name="presentfamilyindex">Compatible present queue index that is returned</param>
-static void getCompatibleQueueFamilies(AppManager& appManager, uint32_t& graphicsfamilyindex, uint32_t& presentfamilyindex)
+static void _getCompatibleQueueFamilies(AppManager& appManager, uint32_t& graphicsfamilyindex, uint32_t& presentfamilyindex)
 {
     // This function iterates through all the queue families available on the selected device and selects a graphics queue
     // family and a present queue family by selecting their associated indices. It also checks that the present queue family
@@ -38,7 +38,7 @@ static void getCompatibleQueueFamilies(AppManager& appManager, uint32_t& graphic
 
 
 /// <summary>Queries the physical device for supported queue families</summary>
-static void initQueuesFamilies(AppManager& appManager)
+inline void _initQueuesFamilies(AppManager& appManager)
 {
     // Concept: Queues and Queues Families
     // Queues are needed by Vulkan to execute commands on, such as drawing or memory transfers.
@@ -61,12 +61,12 @@ static void initQueuesFamilies(AppManager& appManager)
     vk::GetPhysicalDeviceQueueFamilyProperties(appManager.physicalDevice, &queueFamiliesCount, &appManager.queueFamilyProperties[0]);
 
     // Get the indices of compatible queue families.
-    getCompatibleQueueFamilies(appManager, appManager.graphicsQueueFamilyIndex, appManager.presentQueueFamilyIndex);
+    _getCompatibleQueueFamilies(appManager, appManager.graphicsQueueFamilyIndex, appManager.presentQueueFamilyIndex);
 }
 
 
 /// <summary>Creates a rendering and a present queue for executing commands</summary>
-static void initQueues(AppManager& appManager)
+inline void _initQueues(AppManager& appManager)
 {
     // The queues that will be used for executing commands on needs to be retrieved.
     // Two queues are needed: one for rendering and the other to present the rendering on the surface.

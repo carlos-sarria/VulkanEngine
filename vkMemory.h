@@ -4,7 +4,7 @@
 #include "vkStructs.h"
 
 // Check type of memory using the device memory properties.
-inline bool getMemoryTypeFromProperties(const VkPhysicalDeviceMemoryProperties& memory_properties, uint32_t typeBits, VkFlags requirements_mask, uint32_t* typeIndex)
+inline bool _getMemoryTypeFromProperties(const VkPhysicalDeviceMemoryProperties& memory_properties, uint32_t typeBits, VkFlags requirements_mask, uint32_t* typeIndex)
 {
     // Search memory types to find first index with those properties.
     for (uint32_t i = 0; i < memory_properties.memoryTypeCount; i++)
@@ -28,7 +28,7 @@ inline bool getMemoryTypeFromProperties(const VkPhysicalDeviceMemoryProperties& 
 /// <param name="inBuffer">Vkbuffer handle in which the newly-created buffer object is returned</param>
 /// <param name="inData">Data to be copied into the buffer</param>
 /// <param name="inUsage">Usage flag which determines what type of buffer will be created</param>
-inline void createBuffer(AppManager& appManager, BufferData& inBuffer, const uint8_t* inData, const VkBufferUsageFlags& inUsage)
+inline void _createBuffer(AppManager& appManager, BufferData& inBuffer, const uint8_t* inData, const VkBufferUsageFlags& inUsage)
 {
     // This is a generic function which is used to create buffers.
     // It is responsible for creating a buffer object, allocating the memory, mapping this memory, and
@@ -66,7 +66,7 @@ inline void createBuffer(AppManager& appManager, BufferData& inBuffer, const uin
 
     // Check if the memory that is going to be used supports the necessary flags for the usage of the buffer.
     // In this case it needs to be "Host Coherent" in order to be able to map it. If it is not, find a compatible one.
-    bool pass = getMemoryTypeFromProperties(appManager.deviceMemoryProperties, memoryRequirments.memoryTypeBits,
+    bool pass = _getMemoryTypeFromProperties(appManager.deviceMemoryProperties, memoryRequirments.memoryTypeBits,
                                             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &(allocateInfo.memoryTypeIndex));
     if (pass)
     {

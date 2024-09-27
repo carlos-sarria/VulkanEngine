@@ -31,7 +31,7 @@ const std::string InstanceLayers[NumInstanceLayers] = {
 /// <param name="layersToEnable">Array of the names of layers which the application wants to enable</param>
 /// <param name="layerCount">Size of layersToEnable</param>
 /// <returns>Vector of the names of validation layer names which are supported and required by the application.</returns>
-std::vector<std::string> filterLayers(const std::vector<VkLayerProperties>& layerProperties, const std::string* layersToEnable, uint32_t layerCount)
+inline std::vector<std::string> _filterLayers(const std::vector<VkLayerProperties>& layerProperties, const std::string* layersToEnable, uint32_t layerCount)
 {
     // For each layer supported by a particular device, check whether the application has chosen to enable it. If the chosen layer to enable exists in the list
     // of layers to enable, then add the layer to a list of layers to return to the application.
@@ -51,7 +51,7 @@ std::vector<std::string> filterLayers(const std::vector<VkLayerProperties>& laye
 
 /// <summary>Finds the names of the required validation layers</summary>
 /// <returns>Vector of the names of required validation layers which are to be activated</returns>
-std::vector<std::string> initLayers()
+inline std::vector<std::string> _initLayers()
 {
     // Due to the (intentionally) limited overhead in Vulkan, error checking is virtually non-existent.
     // Validation layers provide some error checking functionality but they will first need to be initialised.

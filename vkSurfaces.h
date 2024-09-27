@@ -5,7 +5,7 @@
 #include "vkStructs.h"
 
 /// <summary>Creates a number of framebuffer objects equal to the number of images in the swapchain</summary>
-void initFrameBuffers(AppManager& appManager)
+inline void _initFrameBuffers(AppManager& appManager)
 {
     // Concept: Framebuffers
     // In Vulkan, all the attachments used by the render pass are defined in framebuffers. Each frame in a framebuffer defines
@@ -48,7 +48,7 @@ void initFrameBuffers(AppManager& appManager)
 
 
 /// <summary>Sets up the view port and also sets up the scissor</summary>
-void initViewportAndScissor(AppManager& appManager, SurfaceData& surfaceData)
+inline void _initViewportAndScissor(AppManager& appManager, SurfaceData& surfaceData)
 {
     // The viewport is essentially the dimensions of the rendering area and
     // the scissor is a sub-section of this viewport which is actually stored.
@@ -76,7 +76,7 @@ void initViewportAndScissor(AppManager& appManager, SurfaceData& surfaceData)
 }
 
 /// <summary>Initialises the surface that will be presented to</summary>
-static void initSurface(AppManager& appManager, SurfaceData& surfaceData)
+inline void _initSurface(AppManager& appManager, SurfaceData& surfaceData)
 {
     // This function initialises the surface that will be needed to present this rendered example.
 
@@ -216,7 +216,7 @@ static void initSurface(AppManager& appManager, SurfaceData& surfaceData)
 /// <summary>Checks if the extents are correct based on the capabilities of the surface</summary>
 /// <param name="inSurfCap">Capabilities of the current surface</param>
 /// <returns>A valid correct extent</returns>
-static VkExtent2D getCorrectExtent(AppManager& appManager, SurfaceData& surfaceData, const VkSurfaceCapabilitiesKHR& inSurfCap)
+inline VkExtent2D _getCorrectExtent(AppManager& appManager, SurfaceData& surfaceData, const VkSurfaceCapabilitiesKHR& inSurfCap)
 {
     // This function makes sure the extents are correct for the surface, based on the surface
     // capabilities. It also checks whether the extents are valid and the same as the one picked in
@@ -268,7 +268,7 @@ static VkExtent2D getCorrectExtent(AppManager& appManager, SurfaceData& surfaceD
 }
 
 /// <summary>Creates a swapchain and defines its properties</summary>
-static void initSwapChain(AppManager& appManager, SurfaceData& surfaceData)
+inline void _initSwapChain(AppManager& appManager, SurfaceData& surfaceData)
 {
     // If an application being developed needs to display something, then a swapchain is required.
     // This function creates a swapchain and defines its properties.
@@ -328,7 +328,7 @@ static void initSwapChain(AppManager& appManager, SurfaceData& surfaceData)
     appManager.presentMode = VK_PRESENT_MODE_FIFO_KHR;
 
     // Get the correct extent (dimensions) of the surface using a helper function.
-    appManager.swapchainExtent = getCorrectExtent(appManager, surfaceData, surface_capabilities);
+    appManager.swapchainExtent = _getCorrectExtent(appManager, surfaceData, surface_capabilities);
 
     // Get the minimum number of images supported on this surface.
     uint32_t surfaceImageCount = std::max<uint32_t>(3, surface_capabilities.minImageCount);

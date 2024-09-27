@@ -4,7 +4,7 @@
 #include "vkStructs.h"
 
 /// <summary>Creates a static and dynamic descriptor set</summary>
-void initDescriptorPoolAndSet(AppManager& appManager)
+inline void _initDescriptorPoolAndSet(AppManager& appManager)
 {
     // Concept: Descriptors and Descriptor Sets
     // In Vulkan, to pass data to shaders, descriptor sets are required. Descriptors (as the name implies) are used to describe the data that is going to be passed. They hold

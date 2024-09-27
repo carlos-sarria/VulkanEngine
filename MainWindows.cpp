@@ -73,10 +73,10 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE, _In_ LPSTR lpCmdL
     VulkanHelloAPI vulkanExample;
 
     // Initialisation
-    createWin32WIndowSurface(vulkanExample.surfaceData);
+    createWin32WIndowSurface(vulkanExample.eng.surfaceData);
     vulkanExample.initialize();
 
-    //SetWindowLongPtrA(vulkanExample.surfaceData.window, GWLP_USERDATA, (LONG_PTR)&vulkanExample);
+    //SetWindowLongPtrA(vulkanExample.eng.surfaceData.window, GWLP_USERDATA, (LONG_PTR)&vulkanExample);
 
     // Loop
     MSG msg;
@@ -91,7 +91,7 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE, _In_ LPSTR lpCmdL
 
     // Closing up
     vulkanExample.deinitialize();
-    destroyWin32WindowSurface(vulkanExample.surfaceData);
+    destroyWin32WindowSurface(vulkanExample.eng.surfaceData);
 
 	return 0;
 }

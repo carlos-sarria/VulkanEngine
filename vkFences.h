@@ -4,7 +4,7 @@
 #include "vkStructs.h"
 
 /// <summary>Creates a number of fences and semaphores which synchronise work on the CPU and GPU</summary>
-void initSemaphoreAndFence(AppManager& appManager)
+inline void _initSemaphoreAndFence(AppManager& appManager)
 {
     // Concept: Fences and Semaphores
     // Fences and semaphores are used to synchronise work on the CPU and GPU that share the same resources.

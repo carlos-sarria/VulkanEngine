@@ -15,7 +15,7 @@ set(SRC_FILES
     VulkanEngine.cpp VulkanEngine.h VertShader.h FragShader.h)
 
 add_executable(VulkanEngine WIN32 ${SRC_FILES}
-    vkStructs.h
+
     vkLayers.h
     vkExtensions.h
     vkInit.h
@@ -30,6 +30,8 @@ add_executable(VulkanEngine WIN32 ${SRC_FILES}
     vkPipeline.h
     vkCommandBuffer.h
     vkFences.h
+    vkEngine.h
+    vkStructs.h
 )
 
 set_target_properties(VulkanEngine PROPERTIES CXX_STANDARD 14)

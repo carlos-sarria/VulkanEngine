@@ -4,7 +4,7 @@
 #include "vkStructs.h"
 
 /// <summary>Creates the graphics pipeline</summary>
-void initPipeline(AppManager& appManager)
+inline void _initPipeline(AppManager& appManager)
 {
     // Concept: Pipelines
     // A pipeline is a collection of stages in the rendering or compute process. Each stage processes data and passes it on to the next stage.

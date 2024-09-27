@@ -4,7 +4,7 @@
 #include "vkStructs.h"
 
 /// <summary>Creates a render pass object and defines its properties.</summary>
-void initRenderPass(AppManager& appManager)
+inline void _initRenderPass(AppManager& appManager)
 {
     // Concept: Render passes
     // In Vulkan, a render pass is a collection of data that describes a set of framebuffer

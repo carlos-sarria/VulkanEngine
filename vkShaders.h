@@ -11,7 +11,7 @@
 /// <param name="spvShaderSize">Size of the shader source code in bytes</param>
 /// <param name="indx">Specifies which shader stage to define in appManager's shaderStages array</param>
 /// <param name="shaderStage">Specifies the stage in the pipeline where the shader will exist</param>
-void createShaderModule(AppManager& appManager, const uint32_t* spvShader, size_t spvShaderSize, int indx, VkShaderStageFlagBits shaderStage)
+inline void _createShaderModule(AppManager& appManager, const uint32_t* spvShader, size_t spvShaderSize, int indx, VkShaderStageFlagBits shaderStage)
 {
     // This function will create a shader module and update the shader stage array. The shader module will hold
     // the data from the pre-compiled SPIR-V shader. A shader stage will also be associated with this shader module. This identifies in which stage of the pipeline this shader
@@ -39,19 +39,19 @@ void createShaderModule(AppManager& appManager, const uint32_t* spvShader, size_
 }
 
 /// <summary>Creates the vertex and fragment shader modules and loads in compiled SPIR-V code</summary>
-void initShaders(AppManager& appManager)
+inline void _initShaders(AppManager& appManager)
 {
     // In Vulkan, shaders are in SPIR-V format which is a byte-code format rather than a human-readable one.
     // SPIR-V can be used for both graphical and compute operations.
     // This function loads the compiled source code (see vertshader.h and fragshader.h) and creates shader modules that are going
     // to be used by the pipeline later on.
 
-    createShaderModule(appManager, spv_VertShader_bin, sizeof(spv_VertShader_bin), 0, VK_SHADER_STAGE_VERTEX_BIT);
-    createShaderModule(appManager, spv_FragShader_bin, sizeof(spv_FragShader_bin), 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+    _createShaderModule(appManager, spv_VertShader_bin, sizeof(spv_VertShader_bin), 0, VK_SHADER_STAGE_VERTEX_BIT);
+    _createShaderModule(appManager, spv_FragShader_bin, sizeof(spv_FragShader_bin), 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 }
 
 /// <summary>Creates the uniform buffers used throughout the demo</summary>
-void initUniformBuffers(AppManager& appManager)
+inline void _initUniformBuffers(AppManager& appManager)
 {
     // This function creates a dynamic uniform buffer which will hold several transformation matrices. Each of these matrices is associated with a
     // swapchain image created earlier.
@@ -68,7 +68,7 @@ void initUniformBuffers(AppManager& appManager)
         // the size of the smallest chunk of data which may be mapped or updated as a whole.
         // In this case the size of the intended data is the size of a 4 by 4 matrix.
         size_t bufferDataSizePerSwapchain = sizeof(float) * 4 * 4;
-        bufferDataSizePerSwapchain = static_cast<uint32_t>(getAlignedDataSize(bufferDataSizePerSwapchain, minimumUboAlignment));
+        bufferDataSizePerSwapchain = static_cast<uint32_t>(_getAlignedDataSize(bufferDataSizePerSwapchain, minimumUboAlignment));
 
         // Calculate the size of the dynamic uniform buffer.
         // This buffer will be updated on each frame and must therefore be multi-buffered to avoid issues with using partially updated data, or updating data already in use.
@@ -77,7 +77,7 @@ void initUniformBuffers(AppManager& appManager)
         appManager.dynamicUniformBufferData.size = bufferDataSizePerSwapchain * appManager.swapChainImages.size();
 
         // Create the buffer, allocate the device memory, and attach the memory to the newly created buffer object.
-        createBuffer(appManager, appManager.dynamicUniformBufferData, nullptr, usageFlags);
+        _createBuffer(appManager, appManager.dynamicUniformBufferData, nullptr, usageFlags);
         appManager.dynamicUniformBufferData.bufferInfo.range = bufferDataSizePerSwapchain;
 
         // Note that only memory created with the memory property flag VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT can be mapped.
@@ -89,7 +89,7 @@ void initUniformBuffers(AppManager& appManager)
 }
 /// <summary>Creates a dynamic uniform buffer and allocates its memory</summary>
 /// <param name="inBuffer">Vkbuffer handle in which the newly-created buffer object is returned</param>
-void createDynamicUniformBuffer(AppManager& appManager, BufferData& inBuffer)
+inline void _createDynamicUniformBuffer(AppManager& appManager, BufferData& inBuffer)
 {
     // This function is used to create a dynamic uniform buffer.
 
@@ -143,7 +143,7 @@ void createDynamicUniformBuffer(AppManager& appManager, BufferData& inBuffer)
 
         // Check the memory that is going to used is compatible with the operation of this application.
         // If it is not, find the compatible one.
-        bool pass = getMemoryTypeFromProperties(appManager.deviceMemoryProperties, memoryRequirments.memoryTypeBits,
+        bool pass = _getMemoryTypeFromProperties(appManager.deviceMemoryProperties, memoryRequirments.memoryTypeBits,
                                                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &(allocateInfo.memoryTypeIndex));
 
         if (pass)
