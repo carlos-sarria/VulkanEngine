@@ -4,7 +4,7 @@
 #include "vkStructs.h"
 #include "vkLayers.h"
 #include "vkExtensions.h"
-#include "vkInit.h"
+#include "vkDevice.h"
 #include "vkQueues.h"
 #include "vkSurfaces.h"
 #include "vkMemory.h"

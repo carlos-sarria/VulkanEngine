@@ -18,7 +18,7 @@ add_executable(VulkanEngine WIN32 ${SRC_FILES}
 
     vkLayers.h
     vkExtensions.h
-    vkInit.h
+    vkDevice.h
     vkQueues.h
     vkSurfaces.h
     vkTextures.h

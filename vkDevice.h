@@ -1,5 +1,5 @@
-#ifndef VKINIT_H
-#define VKINIT_H
+#ifndef VKDEVICE_H
+#define VKDEVICE_H
 
 #include "vkStructs.h"
 #include "vk_getProcAddrs.h"
@@ -228,4 +228,4 @@ inline void _initLogicalDevice(AppManager& appManager, std::vector<std::string>&
     if (!vk::initVulkanDevice(appManager.device)) { Log(true, "Could not initialise the device function pointers."); }
 }
 
-#endif // VKINIT_H
+#endif // VKDEVICE_H
