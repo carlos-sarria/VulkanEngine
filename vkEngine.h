@@ -16,32 +16,25 @@
 #include "vkPipeline.h"
 #include "vkFences.h"
 #include "vkCommandBuffer.h"
+#include "vkInitialize.h"
+#include "vkCloseDown.h"
 
 class vkEngine
 {
 public:
-    vkEngine() { }
-public:
+    vkEngine() {}
+
     AppManager appManager;
     SurfaceData surfaceData;
 
-private:
-    // This method checks for physical device compatibility.
-    VkPhysicalDevice getCompatibleDevice(){
-        return _getCompatibleDevice(appManager);
+    void initialize() {
+        _initialize(appManager,surfaceData);
     }
 
-    // Get a compatible queue family with the properties, and it needs to be a graphical one.
-    void getCompatibleQueueFamilies(uint32_t& graphicsfamilyindex, uint32_t& presentfamilyindex){
-        _getCompatibleQueueFamilies(appManager, graphicsfamilyindex, presentfamilyindex);
+    void closeDown() {
+        _closeDown(appManager);
     }
 
-    // Make sure the extent is correct, and if not, set the same sizes as the window.
-    VkExtent2D getCorrectExtent(const VkSurfaceCapabilitiesKHR& inSurfCap){
-        return _getCorrectExtent(appManager, surfaceData, inSurfCap);
-    }
-
-public:
     // Initialise the validation layers.
     std::vector<std::string> initLayers(){
         return _initLayers();
@@ -174,10 +167,21 @@ public:
         _initUniformBuffers(appManager);
     }
 
-    // Initialises all the needed Vulkan objects, but calling all the Init__ methods.
-    // void initialize();
+private:
+    // This method checks for physical device compatibility.
+    VkPhysicalDevice getCompatibleDevice(){
+        return _getCompatibleDevice(appManager);
+    }
 
-    // Cleans up everything when the application is finished with.
-    // void deinitialize();
+    // Get a compatible queue family with the properties, and it needs to be a graphical one.
+    void getCompatibleQueueFamilies(uint32_t& graphicsfamilyindex, uint32_t& presentfamilyindex){
+        _getCompatibleQueueFamilies(appManager, graphicsfamilyindex, presentfamilyindex);
+    }
+
+    // Make sure the extent is correct, and if not, set the same sizes as the window.
+    VkExtent2D getCorrectExtent(const VkSurfaceCapabilitiesKHR& inSurfCap){
+        return _getCorrectExtent(appManager, surfaceData, inSurfCap);
+    }
+
 };
 #endif // VKENGINE_H

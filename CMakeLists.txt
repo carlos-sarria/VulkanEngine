@@ -32,6 +32,8 @@ add_executable(VulkanEngine WIN32 ${SRC_FILES}
     vkFences.h
     vkEngine.h
     vkStructs.h
+    vkInitialize.h
+    vkCloseDown.h
 )
 
 set_target_properties(VulkanEngine PROPERTIES CXX_STANDARD 14)

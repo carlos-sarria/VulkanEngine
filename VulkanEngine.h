@@ -38,7 +38,7 @@ public:
 	void initialize();
 
 	// Cleans up everything when the application is finished with.
-	void deinitialize();
+    void deinitialize() { eng.closeDown(); }
 
 	// Execute the command buffer and present the result to the surface.
 	void drawFrame();
