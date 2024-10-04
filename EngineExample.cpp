@@ -1,5 +1,5 @@
 /*!*********************************************************************************************************************
-\File         VulkanHelloAPI.cpp
+\File         EngineExample.cpp
 \Title        Vulkan HelloAPI
 \Author       PowerVR by Imagination, Developer Technology Team.
 \Copyright    Copyright(c) Imagination Technologies Limited.
@@ -8,7 +8,7 @@
 #include "EngineExample.h"
 
 /// <summary>Executes the recorded command buffers. The recorded operations will end up rendering and presenting the frame to the surface</summary>
-void VulkanHelloAPI::drawFrame()
+void EngineExample::drawFrame()
 {
     eng.startCurrentBuffer();
 
@@ -38,8 +38,8 @@ void rotateAroundZ(float angle, std::array<std::array<float, 4>, 4>& outRotation
 	outRotationMatrix[1][2] = 0;
 	outRotationMatrix[1][3] = 0;
 
-	outRotationMatrix[2][0] = 0;
-	outRotationMatrix[2][1] = 0;
+    outRotationMatrix[2][0] = 0;
+    outRotationMatrix[2][1] = 0;
 	outRotationMatrix[2][2] = 1;
 	outRotationMatrix[2][3] = 0;
 
@@ -66,7 +66,7 @@ void multiplyMatrices(std::array<std::array<float, 4>, 4>& first, std::array<std
 
 /// <summary>Updates the dynamic uniform buffer with the new rotation value</summary>
 /// <param name="idx">Index which selects the correct area of the buffer</param>
-void VulkanHelloAPI::applyRotation(int idx)
+void EngineExample::applyRotation(int idx)
 {
 	// This is called on every frame to update the dynamic uniform buffer with the new rotation
 	// value.
@@ -105,7 +105,7 @@ void VulkanHelloAPI::applyRotation(int idx)
 }
 
 /// <summary>Initialises all Vulkan objects</summary>
-void VulkanHelloAPI::initialize()
+void EngineExample::initialize(const char* appName)
 {
 	// All the Vulkan objects are initialised here.
 	// The vk::initVulkan() function is used to load the Vulkan library and definitions.
@@ -114,7 +114,7 @@ void VulkanHelloAPI::initialize()
 	// of the rotation of the triangle that is going to be rendered on screen.
     eng.appManager.angle = 45.0f;
 
-    eng.initialize();
+    eng.initialize(appName);
 
 	float aspect = 0.0f;
 	// The screen is rotated.

@@ -38,6 +38,20 @@ inline void _initRenderPass(AppManager& appManager)
     colorAttachmentReference.attachment = 0;
     colorAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
+    VkAttachmentDescription depthAttachmentDescription = {};
+    depthAttachmentDescription.format = VK_FORMAT_D32_SFLOAT ;
+    depthAttachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+    depthAttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    depthAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    depthAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    depthAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    depthAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    depthAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+    VkAttachmentReference depthAttachmentReference = {};
+    depthAttachmentReference.attachment = 1;
+    depthAttachmentReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
     // Declare and populate a struct which contains a description of the subpass.
     // In this case the subpass only has a single colour attachment and will support a graphics pipeline.
     VkSubpassDescription subpassDescription = {};
@@ -45,7 +59,7 @@ inline void _initRenderPass(AppManager& appManager)
     subpassDescription.flags = 0;
     subpassDescription.colorAttachmentCount = 1;
     subpassDescription.pColorAttachments = &colorAttachmentReference;
-    subpassDescription.pDepthStencilAttachment = nullptr;
+    subpassDescription.pDepthStencilAttachment = &depthAttachmentReference;
     subpassDescription.pInputAttachments = nullptr;
     subpassDescription.inputAttachmentCount = 0;
     subpassDescription.preserveAttachmentCount = 0;
@@ -65,27 +79,27 @@ inline void _initRenderPass(AppManager& appManager)
     subpassDependencies[1] = {};
     subpassDependencies[1].srcSubpass = 0;
     subpassDependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
-    subpassDependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    subpassDependencies[1].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-    subpassDependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    subpassDependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    subpassDependencies[1].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+    subpassDependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
     subpassDependencies[1].dstAccessMask = 0;
     subpassDependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
+
     // Populate a render pass creation info struct.
     // Again, this simply references the single colour attachment and subpass.
+    VkAttachmentDescription attachments[] = {colorAttachmentDescription, depthAttachmentDescription};
+
     VkRenderPassCreateInfo renderPassInfo = {};
-    renderPassInfo.attachmentCount = 1;
+    renderPassInfo.attachmentCount = 2;
     renderPassInfo.flags = 0;
     renderPassInfo.pNext = nullptr;
     renderPassInfo.subpassCount = 1;
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    renderPassInfo.pAttachments = &colorAttachmentDescription;
+    renderPassInfo.pAttachments = attachments;
     renderPassInfo.pSubpasses = &subpassDescription; // the subpass that was just created.
     renderPassInfo.pDependencies = subpassDependencies;
     renderPassInfo.dependencyCount = 2;
-
-    // Depth or stencil buffers are not needed since this application is simply rendering a
-    // triangle with no depth testing.
 
     // Create the render pass object itself.
     debugAssertFunctionResult(vk::CreateRenderPass(appManager.device, &renderPassInfo, nullptr, &appManager.renderPass), "Render pass Creation");

@@ -26,10 +26,9 @@ public:
 
     AppManager appManager;
     SurfaceData surfaceData;
-    VkResult lastRes; // ??? Crashes if removed, first time there is a Log call
 
-    void initialize() {
-        _initialize(appManager,surfaceData);
+    void initialize(const char* appName) {
+        _initialize(appManager,surfaceData, appName);
     }
 
     void closeDown() {
@@ -50,8 +49,8 @@ public:
     }
 
     // Initialise the application and instance.
-    void initApplicationAndInstance(std::vector<std::string>& extensionNames, std::vector<std::string>& layerNames){
-        _initApplicationAndInstance(appManager, extensionNames, layerNames);
+    void initApplicationAndInstance(const char* appName, std::vector<std::string>& extensionNames, std::vector<std::string>& layerNames){
+        _initApplicationAndInstance(appManager, appName, extensionNames, layerNames);
     }
 
     // Fetch the physical devices and get a compatible one.
@@ -95,8 +94,8 @@ public:
     }
 
     // Create a texture to apply to the primitive.
-    void loadTexture(){
-        _loadTexture(appManager);
+    void loadTexture(TextureData& texture){
+        _loadTexture(appManager, texture);
     }
 
     // Create a descriptor pool and allocate descriptor sets for the buffers.
@@ -152,11 +151,6 @@ public:
     // Generic method for creating a shader module.
     void createShaderModule(const uint32_t* spvShader, size_t spvShaderSize, int indx, VkShaderStageFlagBits shaderStage){
         createShaderModule(spvShader, spvShaderSize, indx, shaderStage);
-    }
-
-    // Generates a texture without having to load an image file.
-    void generateTexture(){
-        _generateTexture(appManager);
     }
 
     // Record the command buffer for rendering the example.

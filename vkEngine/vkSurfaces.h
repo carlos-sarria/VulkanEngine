@@ -73,19 +73,19 @@ inline void _initFrameBuffers(AppManager& appManager)
     // This function creates a framebuffer for each swapchain image.
 
     // This is a placeholder handle for the attachment which will be stored in the VkFramebufferCreateInfo.
-    VkImageView attachment = VK_NULL_HANDLE;
+    VkImageView attachment[] = {VK_NULL_HANDLE, VK_NULL_HANDLE};
 
     // Populate a framebuffer info struct with the information that is needed to create the framebuffers. This includes its dimensions, its attachments, and the associated render
     // pass that will use the specified attachments. The attachment member will be a null variable for now.
     VkFramebufferCreateInfo frameBufferInfo = {};
     frameBufferInfo.flags = 0;
     frameBufferInfo.pNext = nullptr;
-    frameBufferInfo.attachmentCount = 1;
+    frameBufferInfo.attachmentCount = 2;
     frameBufferInfo.height = appManager.swapchainExtent.height;
     frameBufferInfo.width = appManager.swapchainExtent.width;
     frameBufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
     frameBufferInfo.renderPass = appManager.renderPass;
-    frameBufferInfo.pAttachments = &attachment;
+    frameBufferInfo.pAttachments = attachment;
     frameBufferInfo.layers = 1;
 
     // Resize the vector which will contain all of the framebuffers based on the number of images in the swap chain.
@@ -96,7 +96,8 @@ inline void _initFrameBuffers(AppManager& appManager)
     // local variable "attachment". Every time pAttachments is reassigned a new image is used during framebuffer creation.
     for (size_t i = 0; i < appManager.swapChainImages.size(); ++i)
     {
-        attachment = appManager.swapChainImages[i].view;
+        attachment[0] = appManager.swapChainImages[i].view;
+        attachment[1] = appManager.swapChainImages[i].depth_view;
 
         debugAssertFunctionResult(vk::CreateFramebuffer(appManager.device, &frameBufferInfo, nullptr, &appManager.frameBuffers[i]), "Swapchain Frame buffer creation");
     }
@@ -451,6 +452,131 @@ inline void _initSwapChain(AppManager& appManager, SurfaceData& surfaceData)
 
     // Finally, create the swapchain.
     debugAssertFunctionResult(vk::CreateSwapchainKHR(appManager.device, &swapchainInfo, nullptr, &appManager.swapchain), "SwapChain Creation");
+}
+
+inline uint32_t findMemoryType(AppManager& appManager, uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+    VkPhysicalDeviceMemoryProperties memProperties;
+    vk::GetPhysicalDeviceMemoryProperties(appManager.physicalDevice, &memProperties);
+
+    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+        if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+            return i;
+        }
+    }
+    return 0;
+}
+
+inline void createImage(AppManager& appManager,
+                        uint32_t width, uint32_t height,
+                        VkFormat format,
+                        VkImageUsageFlags usage,
+                        VkMemoryPropertyFlags properties,
+                        VkImage& image, VkDeviceMemory& imageMemory) {
+    VkImageCreateInfo imageInfo = {};
+    imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    imageInfo.imageType = VK_IMAGE_TYPE_2D;
+    imageInfo.extent.width = width;
+    imageInfo.extent.height = height;
+    imageInfo.extent.depth = 1;
+    imageInfo.mipLevels = 1;
+    imageInfo.arrayLayers = 1;
+    imageInfo.format = format;
+    imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    imageInfo.usage = usage;
+    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    debugAssertFunctionResult(vk::CreateImage(appManager.device, &imageInfo, nullptr, &image), "createImage - CreateImage");
+
+    VkMemoryRequirements memRequirements;
+    vk::GetImageMemoryRequirements(appManager.device, image, &memRequirements);
+
+    VkMemoryAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memRequirements.size;
+    allocInfo.memoryTypeIndex = findMemoryType(appManager, memRequirements.memoryTypeBits, properties);
+
+    debugAssertFunctionResult(vk::AllocateMemory(appManager.device, &allocInfo, nullptr, &imageMemory), "createImage - AllocateMemory");
+
+    debugAssertFunctionResult(vk::BindImageMemory(appManager.device, image, imageMemory, 0), "createImage - BindImageMemory");
+}
+
+/// <summary>Initialises the images of a previously created swapchain and creates an associated image view for each image</summary>
+inline void _initImagesAndViews(AppManager& appManager)
+{
+    // Concept: Images and Views
+    // Images in Vulkan are the object representation of data. It can take many forms such as attachments, textures, and so on.
+    // Views are a snapshot of the image's parameters. It describes how to access the image and which parts to access.
+    // It helps to distinguish the type of image that is being working with.
+
+    // Image objects are used to hold the swapchain images. When the swapchain was created, the
+    // images were automatically created alongside it. This function creates an image view for each swapchain image.
+
+    // This vector is used as a temporary vector to hold the retrieved images.
+    uint32_t swapchainImageCount;
+    std::vector<VkImage> images;
+    VkImage depth_image;
+    VkDeviceMemory depth_memory;
+
+    // Get the number of the images which are held by the swapchain. This is set in InitSwapchain function and is the minimum number of images supported.
+    debugAssertFunctionResult(vk::GetSwapchainImagesKHR(appManager.device, appManager.swapchain, &swapchainImageCount, nullptr), "SwapChain Images - Get Count");
+
+    // Resize the temporary images vector to hold the number of images.
+    images.resize(swapchainImageCount);
+
+    // Resize the application's permanent swapchain images vector to be able to hold the number of images.
+    appManager.swapChainImages.resize(swapchainImageCount);
+
+    // Get all of the images from the swapchain and save them in a temporary vector.
+    debugAssertFunctionResult(vk::GetSwapchainImagesKHR(appManager.device, appManager.swapchain, &swapchainImageCount, images.data()), "SwapChain Images - Allocate Data");
+
+    createImage(appManager,
+        appManager.swapchainExtent.width, appManager.swapchainExtent.height,
+        VK_FORMAT_D32_SFLOAT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+        depth_image, depth_memory);
+
+    appManager.depth_image = depth_image; // The swapchain can use the same depth buffer for each image as it is cleared at the render start. The views have to be one per chain image
+    appManager.depth_memory = depth_memory;
+
+    // Iterate over each image in order to create an image view for each one.
+    for (uint32_t i = 0; i < swapchainImageCount; ++i)
+    {
+        // Copy over the images to the permanent vector.
+        appManager.swapChainImages[i].image = images[i];
+
+        // Create the image view object itself, referencing one of the retrieved swapchain images.
+        VkImageViewCreateInfo image_view_info = {};
+        image_view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        image_view_info.pNext = nullptr;
+        image_view_info.flags = 0;
+        image_view_info.image = appManager.swapChainImages[i].image;
+        image_view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        image_view_info.format = appManager.surfaceFormat.format;
+
+        image_view_info.components.r = VK_COMPONENT_SWIZZLE_R;
+        image_view_info.components.g = VK_COMPONENT_SWIZZLE_G;
+        image_view_info.components.b = VK_COMPONENT_SWIZZLE_B;
+        image_view_info.components.a = VK_COMPONENT_SWIZZLE_A;
+
+        image_view_info.subresourceRange.layerCount = 1;
+        image_view_info.subresourceRange.levelCount = 1;
+        image_view_info.subresourceRange.baseArrayLayer = 0;
+        image_view_info.subresourceRange.baseMipLevel = 0;
+        image_view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+        // Create the image view object itself, referencing one of the retrieved swapchain images.
+        VkImageViewCreateInfo image_depth_view_info = {};
+        image_depth_view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        image_depth_view_info.pNext = nullptr;
+        image_depth_view_info.image = appManager.depth_image;
+        image_depth_view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        image_depth_view_info.format = VK_FORMAT_D32_SFLOAT;
+        image_depth_view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+
+        debugAssertFunctionResult(vk::CreateImageView(appManager.device, &image_view_info, nullptr, &appManager.swapChainImages[i].view), "SwapChain Images View Creation");
+        debugAssertFunctionResult(vk::CreateImageView(appManager.device, &image_depth_view_info, nullptr, &appManager.swapChainImages[i].depth_view), "SwapChain Images DepthBuffer View Creation");
+    }
 }
 
 #endif // VKSURFACES_H

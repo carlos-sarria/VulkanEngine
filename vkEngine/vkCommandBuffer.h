@@ -117,7 +117,7 @@ inline void _recordCommandBuffer(AppManager& appManager)
         vk::CmdBindVertexBuffers(appManager.cmdBuffers[i], 0, 1, &appManager.vertexBuffer.buffer, vertexOffsets);
 
         // Draw three vertices.
-        vk::CmdDraw(appManager.cmdBuffers[i], 3, 1, 0, 0);
+        vk::CmdDraw(appManager.cmdBuffers[i], appManager.vertexCount, 1, 0, 0);
 
         // End the render pass.
         vk::CmdEndRenderPass(appManager.cmdBuffers[i]);

@@ -16,7 +16,27 @@ set(SRC_FILES
 
     EngineExample.cpp EngineExample.h VertShader.h FragShader.h)
 
-add_executable(VulkanEngine WIN32 ${SRC_FILES})
+add_executable(VulkanEngine WIN32 ${SRC_FILES}
+    vkEngine/vkStructs.h
+    vkEngine/vkLayers.h
+    vkEngine/vkExtensions.h
+    vkEngine/vkDevice.h
+    vkEngine/vkQueues.h
+    vkEngine/vkSurfaces.h
+    vkEngine/vkMemory.h
+    vkEngine/vkTextures.h
+    vkEngine/vkShaders.h
+    vkEngine/vkGeometry.h
+    vkEngine/vkRenderPass.h
+    vkEngine/vkDescriptor.h
+    vkEngine/vkPipeline.h
+    vkEngine/vkFences.h
+    vkEngine/vkCommandBuffer.h
+    vkEngine/vkInitialize.h
+    vkEngine/vkCloseDown.h
+    vkEngine/dds-ktx.h
+    vkEngine/tiny_gltf.h
+)
 
 set_target_properties(VulkanEngine PROPERTIES CXX_STANDARD 14)
 

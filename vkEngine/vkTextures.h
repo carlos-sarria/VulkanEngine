@@ -3,88 +3,53 @@
 
 #include "vkStructs.h"
 #include "vkMemory.h"
+#include "dds-ktx.h"
+#include <vector>
 
-/// <summary>Generates a checkered texture on-the-fly</summary>
-inline void _generateTexture(AppManager& appManager)
+inline bool loadDDS(AppManager& appManager, const char* textureFileName, TextureData& texture)
 {
-    // This function will generate a checkered texture on the fly to be used on the triangle that is going
-    // to be rendered and rotated on screen.
-    for (uint16_t x = 0; x < appManager.texture.textureDimensions.width; ++x)
-    {
-        for (uint16_t y = 0; y < appManager.texture.textureDimensions.height; ++y)
-        {
-            float g = 0.3f;
-            if (x % 128 < 64 && y % 128 < 64) { g = 1; }
-            if (x % 128 >= 64 && y % 128 >= 64) { g = 1; }
+    FILE* textureFile;
 
-            uint8_t* pixel = (static_cast<uint8_t*>(appManager.texture.data.data())) + (x * appManager.texture.textureDimensions.height * 4) + (y * 4);
-            pixel[0] = static_cast<uint8_t>(100 * g);
-            pixel[1] = static_cast<uint8_t>(80 * g);
-            pixel[2] = static_cast<uint8_t>(70 * g);
-            pixel[3] = 255;
+    // opening the file in read mode
+    textureFile = fopen(textureFileName, "r");
+    if(!textureFile)
+    {
+        Log(true, (std::string(" Failed load of ") + textureFileName).c_str());
+        exit(1);
+    }
+
+    // File size
+    fseek(textureFile, 0L, SEEK_END);
+    unsigned int fileSize = ftell(textureFile);
+    fseek(textureFile, 0L, SEEK_SET);
+
+    // File data
+    char* fileData = (char*)malloc(fileSize);
+    fread(fileData, sizeof(char), fileSize, textureFile);
+
+    ddsktx_texture_info tc = {0};
+
+    if (ddsktx_parse(&tc, fileData, fileSize, NULL))
+    {
+        for (int mip = 0; mip < 1 /*tc.num_mips*/; mip++)
+        {
+
+            ddsktx_sub_data sub_data;
+            ddsktx_get_sub(&tc, &sub_data, fileData, fileSize, 0, 0, mip);
+            texture.data.assign((uint8_t*)sub_data.buff, (uint8_t*)sub_data.buff + sub_data.size_bytes);
+            texture.textureDimensions.width = sub_data.width;
+            texture.textureDimensions.height = sub_data.height;
         }
     }
-}
 
-/// <summary>Initialises the images of a previously created swapchain and creates an associated image view for each image</summary>
-inline void _initImagesAndViews(AppManager& appManager)
-{
-    // Concept: Images and Views
-    // Images in Vulkan are the object representation of data. It can take many forms such as attachments, textures, and so on.
-    // Views are a snapshot of the image's parameters. It describes how to access the image and which parts to access.
-    // It helps to distinguish the type of image that is being working with.
+    free(fileData);
+    fclose (textureFile);
 
-    // Image objects are used to hold the swapchain images. When the swapchain was created, the
-    // images were automatically created alongside it. This function creates an image view for each swapchain image.
-
-    // This vector is used as a temporary vector to hold the retrieved images.
-    uint32_t swapchainImageCount;
-    std::vector<VkImage> images;
-
-    // Get the number of the images which are held by the swapchain. This is set in InitSwapchain function and is the minimum number of images supported.
-    debugAssertFunctionResult(vk::GetSwapchainImagesKHR(appManager.device, appManager.swapchain, &swapchainImageCount, nullptr), "SwapChain Images - Get Count");
-
-    // Resize the temporary images vector to hold the number of images.
-    images.resize(swapchainImageCount);
-
-    // Resize the application's permanent swapchain images vector to be able to hold the number of images.
-    appManager.swapChainImages.resize(swapchainImageCount);
-
-    // Get all of the images from the swapchain and save them in a temporary vector.
-    debugAssertFunctionResult(vk::GetSwapchainImagesKHR(appManager.device, appManager.swapchain, &swapchainImageCount, images.data()), "SwapChain Images - Allocate Data");
-
-    // Iterate over each image in order to create an image view for each one.
-    for (uint32_t i = 0; i < swapchainImageCount; ++i)
-    {
-        // Copy over the images to the permanent vector.
-        appManager.swapChainImages[i].image = images[i];
-
-        // Create the image view object itself, referencing one of the retrieved swapchain images.
-        VkImageViewCreateInfo image_view_info = {};
-        image_view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        image_view_info.pNext = nullptr;
-        image_view_info.flags = 0;
-        image_view_info.image = appManager.swapChainImages[i].image;
-        image_view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        image_view_info.format = appManager.surfaceFormat.format;
-
-        image_view_info.components.r = VK_COMPONENT_SWIZZLE_R;
-        image_view_info.components.g = VK_COMPONENT_SWIZZLE_G;
-        image_view_info.components.b = VK_COMPONENT_SWIZZLE_B;
-        image_view_info.components.a = VK_COMPONENT_SWIZZLE_A;
-
-        image_view_info.subresourceRange.layerCount = 1;
-        image_view_info.subresourceRange.levelCount = 1;
-        image_view_info.subresourceRange.baseArrayLayer = 0;
-        image_view_info.subresourceRange.baseMipLevel = 0;
-        image_view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-
-        debugAssertFunctionResult(vk::CreateImageView(appManager.device, &image_view_info, nullptr, &appManager.swapChainImages[i].view), "SwapChain Images View Creation");
-    }
+    return true;
 }
 
 /// <summary>Creates a texture image (VkImage) and maps it into GPU memory</summary>
-inline void _loadTexture(AppManager& appManager)
+inline void _loadTexture(AppManager& appManager, TextureData& texture)
 {
     // In Vulkan, uploading an image requires multiple steps:
 
@@ -105,23 +70,15 @@ inline void _loadTexture(AppManager& appManager)
     // Using the vkCmdCopyBufferToImage command in the second (uploading) step guarantees the correct
     // translation/swizzling of the texture data.
 
-    // These steps are demonstrated below.
-
-    // Set the width and height of the texture image.
-    appManager.texture.textureDimensions.height = 256;
-    appManager.texture.textureDimensions.width = 256;
-    appManager.texture.data.resize(appManager.texture.textureDimensions.width * appManager.texture.textureDimensions.height * 4);
-
-    // This function generates a texture pattern on-the-fly into a block of CPU-side memory: appManager.texture.data.
-    _generateTexture(appManager);
+    loadDDS(appManager, "..\\..\\Texture_1_compresonator.dds", texture); // format = VK_FORMAT_R8G8B8A8_UNORM;
 
     // The BufferData struct has been defined in this application to hold the necessary data for the staging buffer.
     BufferData stagingBufferData;
-    stagingBufferData.size = appManager.texture.data.size();
+    stagingBufferData.size = texture.data.size();
 
     // Use the buffer creation function to generate a staging buffer. The VK_BUFFER_USAGE_TRANSFER_SRC_BIT flag is passed to specify that the buffer
     // is going to be used as the source buffer of a transfer command.
-    _createBuffer(appManager, stagingBufferData, appManager.texture.data.data(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    _createBuffer(appManager, stagingBufferData, texture.data.data(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
 
     // Create the image object.
     // The format is set to the most common format, R8G8B8_UNORM, 8-bits per channel, unsigned, and normalised.
@@ -143,16 +100,16 @@ inline void _loadTexture(AppManager& appManager)
     imageInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-    imageInfo.extent = { appManager.texture.textureDimensions.width, appManager.texture.textureDimensions.height, 1 };
+    imageInfo.extent = { texture.textureDimensions.width, texture.textureDimensions.height, 1 };
     imageInfo.mipLevels = 1;
     imageInfo.arrayLayers = 1;
 
-    debugAssertFunctionResult(vk::CreateImage(appManager.device, &imageInfo, nullptr, &appManager.texture.image), "Texture Image Creation");
+    debugAssertFunctionResult(vk::CreateImage(appManager.device, &imageInfo, nullptr, &texture.image), "Texture Image Creation");
 
     // Get the memory allocation requirements for the image.
     // These are used to allocate memory for the image that has just been created.
     VkMemoryRequirements memoryRequirments;
-    vk::GetImageMemoryRequirements(appManager.device, appManager.texture.image, &memoryRequirments);
+    vk::GetImageMemoryRequirements(appManager.device, texture.image, &memoryRequirments);
 
     // Populate a memory allocation info struct with the memory requirements size for the image.
     VkMemoryAllocateInfo allocateInfo = {};
@@ -166,8 +123,8 @@ inline void _loadTexture(AppManager& appManager)
     _getMemoryTypeFromProperties(appManager.deviceMemoryProperties, memoryRequirments.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &(allocateInfo.memoryTypeIndex));
 
     // Use all of this information to allocate memory with the correct features for the image and bind the memory to the texture buffer.
-    debugAssertFunctionResult(vk::AllocateMemory(appManager.device, &allocateInfo, nullptr, &appManager.texture.memory), "Texture Image Memory Allocation");
-    debugAssertFunctionResult(vk::BindImageMemory(appManager.device, appManager.texture.image, appManager.texture.memory, 0), "Texture Image Memory Binding");
+    debugAssertFunctionResult(vk::AllocateMemory(appManager.device, &allocateInfo, nullptr, &texture.memory), "Texture Image Memory Allocation");
+    debugAssertFunctionResult(vk::BindImageMemory(appManager.device, texture.image, texture.memory, 0), "Texture Image Memory Binding");
 
     // Specify the region which should be copied from the texture. In this case it is the entire image, so
     // the texture width and height are passed as extents.
@@ -176,8 +133,8 @@ inline void _loadTexture(AppManager& appManager)
     copyRegion.imageSubresource.mipLevel = 0;
     copyRegion.imageSubresource.baseArrayLayer = 0;
     copyRegion.imageSubresource.layerCount = 1;
-    copyRegion.imageExtent.width = static_cast<uint32_t>(appManager.texture.textureDimensions.width);
-    copyRegion.imageExtent.height = static_cast<uint32_t>(appManager.texture.textureDimensions.height);
+    copyRegion.imageExtent.width = static_cast<uint32_t>(texture.textureDimensions.width);
+    copyRegion.imageExtent.height = static_cast<uint32_t>(texture.textureDimensions.height);
     copyRegion.imageExtent.depth = 1;
     copyRegion.bufferOffset = 0;
 
@@ -223,7 +180,7 @@ inline void _loadTexture(AppManager& appManager)
     copyMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
     copyMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     copyMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-    copyMemoryBarrier.image = appManager.texture.image;
+    copyMemoryBarrier.image = texture.image;
     copyMemoryBarrier.subresourceRange = subResourceRange;
     copyMemoryBarrier.srcAccessMask = 0;
     copyMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -232,7 +189,7 @@ inline void _loadTexture(AppManager& appManager)
     vk::CmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr, 1, &copyMemoryBarrier);
 
     // Copy the staging buffer data to the image that was just created.
-    vk::CmdCopyBufferToImage(commandBuffer, stagingBufferData.buffer, appManager.texture.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
+    vk::CmdCopyBufferToImage(commandBuffer, stagingBufferData.buffer, texture.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
 
     // Create a barrier to make sure that the image layout is shader read-only.
     // This barrier will transition the image layout from VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL to
@@ -241,7 +198,7 @@ inline void _loadTexture(AppManager& appManager)
     layoutMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
     layoutMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
     layoutMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    layoutMemoryBarrier.image = appManager.texture.image;
+    layoutMemoryBarrier.image = texture.image;
     layoutMemoryBarrier.subresourceRange = subResourceRange;
     layoutMemoryBarrier.srcAccessMask = 0;
     layoutMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
@@ -289,7 +246,7 @@ inline void _loadTexture(AppManager& appManager)
     imageViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     imageViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
     imageViewInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
-    imageViewInfo.image = appManager.texture.image;
+    imageViewInfo.image = texture.image;
     imageViewInfo.subresourceRange.layerCount = 1;
     imageViewInfo.subresourceRange.levelCount = 1;
     imageViewInfo.subresourceRange.baseArrayLayer = 0;
@@ -300,7 +257,7 @@ inline void _loadTexture(AppManager& appManager)
     imageViewInfo.components.b = VK_COMPONENT_SWIZZLE_B;
     imageViewInfo.components.a = VK_COMPONENT_SWIZZLE_A;
 
-    debugAssertFunctionResult(vk::CreateImageView(appManager.device, &imageViewInfo, nullptr, &appManager.texture.view), "Texture Image View Creation");
+    debugAssertFunctionResult(vk::CreateImageView(appManager.device, &imageViewInfo, nullptr, &texture.view), "Texture Image View Creation");
 
     // Create a texture sampler.
     // The sampler will be needed to sample the texture data and pass
@@ -329,7 +286,7 @@ inline void _loadTexture(AppManager& appManager)
     samplerInfo.minLod = 0.0f;
     samplerInfo.maxLod = 5.0f;
 
-    debugAssertFunctionResult(vk::CreateSampler(appManager.device, &samplerInfo, nullptr, &appManager.texture.sampler), "Texture Sampler Creation");
+    debugAssertFunctionResult(vk::CreateSampler(appManager.device, &samplerInfo, nullptr, &texture.sampler), "Texture Sampler Creation");
 
     // Clean up all the temporary data created for this operation.
     vk::DestroyFence(appManager.device, copyFence, nullptr);

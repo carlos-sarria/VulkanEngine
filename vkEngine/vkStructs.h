@@ -14,6 +14,7 @@ struct SwapchainImage
 {
     VkImage image;
     VkImageView view;
+    VkImageView depth_view;
 };
 
 struct BufferData
@@ -40,6 +41,7 @@ struct TextureData
 
 struct AppManager
 {
+    const char* appName;
     std::vector<const char*> instanceLayerNames;
     std::vector<const char*> instanceExtensionNames;
     std::vector<const char*> deviceExtensionNames;
@@ -87,11 +89,16 @@ struct AppManager
     BufferData dynamicUniformBufferData;
     TextureData texture;
 
+    VkImage depth_image;
+    VkDeviceMemory depth_memory;
+
     float angle;
     uint32_t offset;
 
     int frameId;
     uint32_t currentBuffer;
+
+    uint32_t vertexCount;
 };
 
 struct Vertex

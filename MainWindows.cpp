@@ -4,9 +4,11 @@
 
 #ifdef VK_USE_PLATFORM_WIN32_KHR
 
+#define APP_NAME "vkEngine Example"
+
 static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    // VulkanHelloAPI* engine = reinterpret_cast<VulkanHelloAPI*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+    // EngineExample* engine = reinterpret_cast<EngineExample*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
 
 	switch (uMsg)
 	{
@@ -38,7 +40,7 @@ void createWin32WIndowSurface(SurfaceData& surfaceData)
 	winClass.hCursor = 0;
 	winClass.lpszMenuName = 0;
 	winClass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
-	winClass.lpszClassName = "Vulkan Hello API Sample";
+    winClass.lpszClassName = APP_NAME;
 
 	if (!RegisterClass(&winClass))
 	{
@@ -63,11 +65,11 @@ static void destroyWin32WindowSurface(SurfaceData& surfaceData)
 
 int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
 {
-    VulkanHelloAPI vulkanExample;
+    EngineExample vulkanExample;
 
     // Initialisation
     createWin32WIndowSurface(vulkanExample.eng.surfaceData);
-    vulkanExample.initialize();
+    vulkanExample.initialize(APP_NAME);
 
     //SetWindowLongPtrA(vulkanExample.eng.surfaceData.window, GWLP_USERDATA, (LONG_PTR)&vulkanExample);
 

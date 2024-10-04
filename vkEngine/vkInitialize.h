@@ -16,7 +16,7 @@
 #include "vkFences.h"
 #include "vkCommandBuffer.h"
 
-inline void _initialize(AppManager& appManager, SurfaceData& surfaceData)
+inline void _initialize(AppManager& appManager, SurfaceData& surfaceData, const char* appName)
 {
     // Initialise all the pointers to Vulkan functions.
     vk::initVulkan();
@@ -24,7 +24,7 @@ inline void _initialize(AppManager& appManager, SurfaceData& surfaceData)
     std::vector<std::string> layers = _initLayers();
     std::vector<std::string> instanceExtensions = _initInstanceExtensions();
 
-    _initApplicationAndInstance(appManager, instanceExtensions, layers);
+    _initApplicationAndInstance(appManager, appName, instanceExtensions, layers);
     _initPhysicalDevice(appManager);
 
     _initSurface(appManager, surfaceData);
@@ -42,7 +42,7 @@ inline void _initialize(AppManager& appManager, SurfaceData& surfaceData)
     _initVertexBuffers(appManager);
     _initUniformBuffers(appManager);
     _initRenderPass(appManager);
-    _loadTexture(appManager);
+    _loadTexture(appManager, appManager.texture);
     _initDescriptorPoolAndSet(appManager);
 
     _initFrameBuffers(appManager);

@@ -6,7 +6,7 @@
 /// <summary>Creates a Vulkan instance</summary>
 /// <param name="extensionNames">Vector of the names of the required instance-level extensions</param>
 /// <param name="layerNames">Vector of the names of the required validation layers</param>
-inline void _initApplicationAndInstance(AppManager& appManager, std::vector<std::string>& extensionNames, std::vector<std::string>& layerNames)
+inline void _initApplicationAndInstance(AppManager& appManager, const char* appName, std::vector<std::string>& extensionNames, std::vector<std::string>& layerNames)
 {
     // This is where the Vulkan instance is created. Vulkan does not have a global state like OpenGL, so a
     // handle is required to access its functions. The instance is the primary access to the API.
@@ -16,12 +16,15 @@ inline void _initApplicationAndInstance(AppManager& appManager, std::vector<std:
     // object which is going to be created. In this case, applicationInfo contains properties such as the chosen name of the application and the version of Vulkan used.
     VkApplicationInfo applicationInfo = {};
     applicationInfo.pNext = nullptr;
-    applicationInfo.pApplicationName = "Vulkan Hello API Sample";
+    applicationInfo.pApplicationName = appName;
     applicationInfo.applicationVersion = 1;
     applicationInfo.engineVersion = 1;
-    applicationInfo.pEngineName = "Vulkan Hello API Sample";
+    applicationInfo.pEngineName = "vkEngine";
     applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     applicationInfo.apiVersion = VK_API_VERSION_1_0;
+
+
+    appManager.appName = appName;
 
     // Declare an instance creation info struct.
     // instanceInfo specifies the parameters of a newly created Vulkan instance. The
@@ -109,7 +112,7 @@ inline VkPhysicalDevice _getCompatibleDevice(AppManager& appManager)
         vk::GetPhysicalDeviceFeatures(device, &deviceFeatures);
 
         // Return the first device which is either a discrete GPU or an integrated GPU.
-        if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU || deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU)
+        if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)// || deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU)
         {
             Log(false, "Active Device is -- %s", deviceProperties.deviceName);
             return device;

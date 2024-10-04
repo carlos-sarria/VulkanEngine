@@ -1,9 +1,9 @@
 /*!*********************************************************************************************************************
-\File         VulkanHelloAPI.h
+\File         EngineExample.h
 \Title        VulkanHello API Header
 \Author       PowerVR by Imagination, Developer Technology Team.
 \Copyright    Copyright(c) Imagination Technologies Limited.
-\brief        Header file for VulkanHelloAPI class. It also contains helper functions and structs.
+\brief        Header file for EngineExample class. It also contains helper functions and structs.
 ***********************************************************************************************************************/
 #pragma once
 #include <string>
@@ -21,7 +21,7 @@
 const float PI = 3.14159265359f;
 const float TORAD = PI / 180.0f;
 
-class VulkanHelloAPI
+class EngineExample
 {
 private:
 	// Custom structs that encapsulates related data to help keep track of
@@ -36,7 +36,7 @@ public:
 	void applyRotation(int idx = 0);
 
 	// Initialises all the needed Vulkan objects, but calling all the Init__ methods.
-	void initialize();
+    void initialize(const char* appName);
 
 	// Cleans up everything when the application is finished with.
     void deinitialize() { eng.closeDown(); }
