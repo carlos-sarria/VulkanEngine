@@ -51,8 +51,13 @@ inline void _closeDown(AppManager& appManager)
     vk::DestroySampler(appManager.device, appManager.texture.sampler, nullptr);
 
     // Destroy then free the memory for the vertex buffer.
-    vk::DestroyBuffer(appManager.device, appManager.vertexBuffer.buffer, nullptr);
-    vk::FreeMemory(appManager.device, appManager.vertexBuffer.memory, nullptr);
+    for (Mesh m : appManager.meshes)
+    {
+        vk::DestroyBuffer(appManager.device, m.vertexBuffer.buffer, nullptr);
+        vk::FreeMemory(appManager.device, m.vertexBuffer.memory, nullptr);
+        vk::DestroyBuffer(appManager.device, m.indexBuffer.buffer, nullptr);
+        vk::FreeMemory(appManager.device, m.indexBuffer.memory, nullptr);
+    }
 
     // Iterate through each of the framebuffers and destroy them.
     for (uint32_t i = 0; i < appManager.frameBuffers.size(); i++) { vk::DestroyFramebuffer(appManager.device, appManager.frameBuffers[i], nullptr); }

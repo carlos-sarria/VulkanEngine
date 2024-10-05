@@ -65,7 +65,7 @@ inline std::vector<std::string> _initLayers()
 
 // This ensures validation layers will only be enabled during
 // debugging, reducing the overhead of the final release version.
-#ifdef PVR_DEBUG
+#ifdef DEBUG
     // Create a vector to hold the layer properties.
     std::vector<VkLayerProperties> outLayers;
     uint32_t numItems = 0;
@@ -83,7 +83,7 @@ inline std::vector<std::string> _initLayers()
     for (auto&& layer : outLayers) { Log(false, ">> %s", layer.layerName); }
     Log(false, "--------------------------------------");
 
-    layerNames = filterLayers(outLayers, InstanceLayers, NumInstanceLayers);
+    layerNames = _filterLayers(outLayers, InstanceLayers, NumInstanceLayers);
 
     bool requestedStdValidation = false;
     bool supportsStdValidation = false;
@@ -143,7 +143,7 @@ inline std::vector<std::string> _initLayers()
             }
 
             // Filter the layers again. This time checking for support for the component layers enabled via VK_LAYER_LUNARG_standard_validation.
-            layerNames = filterLayers(outLayers, layerNames.data(), static_cast<uint32_t>(layerNames.size()));
+            layerNames = _filterLayers(outLayers, layerNames.data(), static_cast<uint32_t>(layerNames.size()));
         }
     }
 

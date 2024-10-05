@@ -39,6 +39,21 @@ struct TextureData
     VkSampler sampler;
 };
 
+
+struct Vertex
+{
+    float x, y, z, w; // coordinates.
+    float nx, ny, nz; // normals.
+    float u, v; // texture UVs.
+};
+
+struct Mesh
+{
+    BufferData vertexBuffer;
+    BufferData indexBuffer;
+    uint32_t vertexCount;
+};
+
 struct AppManager
 {
     const char* appName;
@@ -52,6 +67,7 @@ struct AppManager
     std::vector<VkCommandBuffer> cmdBuffers;
     std::vector<VkFramebuffer> frameBuffers;
     std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
+    std::vector<Mesh> meshes;
 
     std::vector<VkSemaphore> acquireSemaphore;
     std::vector<VkSemaphore> presentSemaphores;
@@ -85,7 +101,6 @@ struct AppManager
     VkDescriptorSetLayout staticDescriptorSetLayout;
     VkDescriptorSetLayout dynamicDescriptorSetLayout;
 
-    BufferData vertexBuffer;
     BufferData dynamicUniformBufferData;
     TextureData texture;
 
@@ -98,13 +113,7 @@ struct AppManager
     int frameId;
     uint32_t currentBuffer;
 
-    uint32_t vertexCount;
-};
-
-struct Vertex
-{
-    float x, y, z, w; // coordinates.
-    float u, v; // texture UVs.
+    uint32_t padding;
 };
 
 // The Surface Data structure is different based on the platform being used.

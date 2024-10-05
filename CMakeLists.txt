@@ -13,8 +13,8 @@ set(SRC_FILES
     vkEngine/vkEngine.h
     MainWindows.cpp
     vkEngine/vk_getProcAddrs.h vkEngine/vk_getProcAddrs.cpp
-
-    EngineExample.cpp EngineExample.h VertShader.h FragShader.h)
+    FragShader.frag VertShader.vert
+    EngineExample.cpp EngineExample.h)
 
 add_executable(VulkanEngine WIN32 ${SRC_FILES}
     vkEngine/vkStructs.h
@@ -36,6 +36,13 @@ add_executable(VulkanEngine WIN32 ${SRC_FILES}
     vkEngine/vkCloseDown.h
     vkEngine/dds-ktx.h
     vkEngine/tiny_gltf.h
+)
+
+add_custom_command(TARGET ${PROJECT_NAME}
+    PRE_BUILD
+    MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/VertShader.vert ${CMAKE_CURRENT_SOURCE_DIR}/FragShader.frag
+    COMMAND C:/dev/vulcan/spirv-tools/bin/glslangvalidator -V -o ${CMAKE_CURRENT_SOURCE_DIR}/vert.spv --target-env vulkan1.0 -S vert ${CMAKE_CURRENT_SOURCE_DIR}/VertShader.vert
+    COMMAND C:/dev/vulcan/spirv-tools/bin/glslangvalidator -V -o ${CMAKE_CURRENT_SOURCE_DIR}/frag.spv --target-env vulkan1.0 -S frag ${CMAKE_CURRENT_SOURCE_DIR}/FragShader.frag
 )
 
 set_target_properties(VulkanEngine PROPERTIES CXX_STANDARD 14)

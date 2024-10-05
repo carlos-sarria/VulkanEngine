@@ -113,11 +113,17 @@ inline void _recordCommandBuffer(AppManager& appManager)
         // contained within the dynamic descriptor set.
         vk::CmdBindDescriptorSets(appManager.cmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, appManager.pipelineLayout, 0, NUM_DESCRIPTOR_SETS, descriptorSet, 1, &offset);
 
-        // Bind the vertex buffer.
-        vk::CmdBindVertexBuffers(appManager.cmdBuffers[i], 0, 1, &appManager.vertexBuffer.buffer, vertexOffsets);
+        for(Mesh m : appManager.meshes)
+        {
+            // Bind the vertex buffer.
+            vk::CmdBindVertexBuffers(appManager.cmdBuffers[i], 0, 1, &m.vertexBuffer.buffer, vertexOffsets);
 
-        // Draw three vertices.
-        vk::CmdDraw(appManager.cmdBuffers[i], appManager.vertexCount, 1, 0, 0);
+            // Bind the index buffer.
+            vk::CmdBindIndexBuffer(appManager.cmdBuffers[i], m.indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16);
+
+            // Draw the vertices.
+            vk::CmdDrawIndexed(appManager.cmdBuffers[i], m.vertexCount, 1, 0, 0, 0);
+        }
 
         // End the render pass.
         vk::CmdEndRenderPass(appManager.cmdBuffers[i]);

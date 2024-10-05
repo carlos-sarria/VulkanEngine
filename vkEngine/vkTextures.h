@@ -11,7 +11,7 @@ inline bool loadDDS(AppManager& appManager, const char* textureFileName, Texture
     FILE* textureFile;
 
     // opening the file in read mode
-    textureFile = fopen(textureFileName, "r");
+    textureFile = fopen(textureFileName, "rb");
     if(!textureFile)
     {
         Log(true, (std::string(" Failed load of ") + textureFileName).c_str());

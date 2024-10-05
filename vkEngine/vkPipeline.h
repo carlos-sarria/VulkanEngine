@@ -29,16 +29,21 @@ inline void _initPipeline(AppManager& appManager)
     // position co-ordinates and one for the texture co-ordinates.
     // The offset variable specifies at what memory location within each vertex the attribute is found, and the format
     // parameter describes how the data is stored in each attribute.
-    VkVertexInputAttributeDescription vertexInputAttributeDescription[2];
+    VkVertexInputAttributeDescription vertexInputAttributeDescription[3];
     vertexInputAttributeDescription[0].binding = 0;
     vertexInputAttributeDescription[0].format = VK_FORMAT_R32G32B32A32_SFLOAT;
     vertexInputAttributeDescription[0].location = 0;
     vertexInputAttributeDescription[0].offset = 0;
 
     vertexInputAttributeDescription[1].binding = 0;
-    vertexInputAttributeDescription[1].format = VK_FORMAT_R32G32_SFLOAT;
+    vertexInputAttributeDescription[1].format = VK_FORMAT_R32G32B32_SFLOAT;
     vertexInputAttributeDescription[1].location = 1;
     vertexInputAttributeDescription[1].offset = 4 * sizeof(float);
+
+    vertexInputAttributeDescription[2].binding = 0;
+    vertexInputAttributeDescription[2].format = VK_FORMAT_R32G32_SFLOAT;
+    vertexInputAttributeDescription[2].location = 2;
+    vertexInputAttributeDescription[2].offset = 7 * sizeof(float);
 
     // Combine the vertex bindings and the vertex attributes into the vertex input. This sums up all of the information about the vertices.
     VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};

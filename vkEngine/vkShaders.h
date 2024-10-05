@@ -3,26 +3,42 @@
 
 #include "vkStructs.h"
 #include "vkMemory.h"
-#include "../FragShader.h"
-#include "../VertShader.h"
 
 /// <summary>Creates a shader module using pre-compiled SPIR-V shader source code</summary>
 /// <param name="spvShader">Shader source code</param>
 /// <param name="spvShaderSize">Size of the shader source code in bytes</param>
 /// <param name="indx">Specifies which shader stage to define in appManager's shaderStages array</param>
 /// <param name="shaderStage">Specifies the stage in the pipeline where the shader will exist</param>
-inline void _createShaderModule(AppManager& appManager, const uint32_t* spvShader, size_t spvShaderSize, int indx, VkShaderStageFlagBits shaderStage)
+inline void _createShaderModule(AppManager& appManager, const char* fileName, int indx, VkShaderStageFlagBits shaderStage)
 {
     // This function will create a shader module and update the shader stage array. The shader module will hold
     // the data from the pre-compiled SPIR-V shader. A shader stage will also be associated with this shader module. This identifies in which stage of the pipeline this shader
     // will be used.
+    FILE* shaderFile;
+
+    // opening the file in read mode
+    shaderFile = fopen(fileName, "rb");
+    if(!shaderFile)
+    {
+        Log(true, (std::string("Failed load shader: ") + fileName).c_str());
+        exit(1);
+    }
+
+    // File size
+    fseek(shaderFile, 0L, SEEK_END);
+    unsigned int fileSize = ftell(shaderFile);
+    fseek(shaderFile, 0L, SEEK_SET);
+
+    // File data
+    uint32_t* fileData = (uint32_t*)malloc(fileSize);
+    fread(fileData, sizeof(char), fileSize, shaderFile);
 
     // Populate a shader module creation info struct with a pointer to the shader source code and the size of the shader in bytes.
     VkShaderModuleCreateInfo shaderModuleInfo = {};
     shaderModuleInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     shaderModuleInfo.flags = 0;
-    shaderModuleInfo.pCode = spvShader;
-    shaderModuleInfo.codeSize = spvShaderSize;
+    shaderModuleInfo.pCode = fileData;
+    shaderModuleInfo.codeSize = fileSize;
     shaderModuleInfo.pNext = nullptr;
 
     // Set the stage of the pipeline that the shader module will be associated with.
@@ -36,6 +52,9 @@ inline void _createShaderModule(AppManager& appManager, const uint32_t* spvShade
 
     // Create a shader module and add it to the shader stage corresponding to the VkShaderStageFlagBits stage.
     debugAssertFunctionResult(vk::CreateShaderModule(appManager.device, &shaderModuleInfo, nullptr, &(appManager.shaderStages[indx].module)), "Shader Module Creation");
+
+    free(fileData);
+    fclose(shaderFile);
 }
 
 /// <summary>Creates the vertex and fragment shader modules and loads in compiled SPIR-V code</summary>
@@ -46,8 +65,11 @@ inline void _initShaders(AppManager& appManager)
     // This function loads the compiled source code (see vertshader.h and fragshader.h) and creates shader modules that are going
     // to be used by the pipeline later on.
 
-    _createShaderModule(appManager, spv_VertShader_bin, sizeof(spv_VertShader_bin), 0, VK_SHADER_STAGE_VERTEX_BIT);
-    _createShaderModule(appManager, spv_FragShader_bin, sizeof(spv_FragShader_bin), 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+    //_createShaderModule(appManager, spv_VertShader_bin, sizeof(spv_VertShader_bin), 0, VK_SHADER_STAGE_VERTEX_BIT);
+    //_createShaderModule(appManager, spv_FragShader_bin, sizeof(spv_FragShader_bin), 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+
+    _createShaderModule(appManager, "..\\..\\vert.spv", 0, VK_SHADER_STAGE_VERTEX_BIT);
+    _createShaderModule(appManager, "..\\..\\frag.spv", 1, VK_SHADER_STAGE_FRAGMENT_BIT);
 }
 
 /// <summary>Creates the uniform buffers used throughout the demo</summary>
