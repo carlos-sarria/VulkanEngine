@@ -39,12 +39,39 @@ struct TextureData
     VkSampler sampler;
 };
 
+typedef struct
+{
+    union{
+        float x;
+        float u;
+    };
+    union{
+        float y;
+        float v;
+    };
+} VEC2;
+
+typedef struct
+{
+    float x;	/*!< x coordinate */
+    float y;	/*!< y coordinate */
+    float z;	/*!< z coordinate */
+} VEC3;
+
+typedef struct
+{
+    float x;	/*!< x coordinate */
+    float y;	/*!< y coordinate */
+    float z;	/*!< z coordinate */
+    float w;	/*!< w coordinate */
+} VEC4;
+
 
 struct Vertex
 {
-    float x, y, z, w; // coordinates.
-    float nx, ny, nz; // normals.
-    float u, v; // texture UVs.
+    VEC4 pos; // coordinates.
+    VEC3 nor; // normals.
+    VEC2 tex; // texture UVs.
 };
 
 struct Mesh

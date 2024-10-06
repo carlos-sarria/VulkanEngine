@@ -36,6 +36,7 @@ add_executable(VulkanEngine WIN32 ${SRC_FILES}
     vkEngine/vkCloseDown.h
     vkEngine/dds-ktx.h
     vkEngine/tiny_gltf.h
+    vkEngine/vkMath.h
 )
 
 add_custom_command(TARGET ${PROJECT_NAME}

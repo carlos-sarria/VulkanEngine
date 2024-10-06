@@ -18,7 +18,6 @@
 #define FENCE_TIMEOUT std::numeric_limits<uint64_t>::max()
 #define NUM_DESCRIPTOR_SETS 2
 
-const float PI = 3.14159265359f;
 const float TORAD = PI / 180.0f;
 
 class EngineExample
