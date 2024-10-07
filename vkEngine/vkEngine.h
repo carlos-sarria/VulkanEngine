@@ -200,6 +200,10 @@ public:
         _matrixRotationZ(mOut, fAngle);
     }
 
+    inline void matrixRotationQ(MATRIX &mOut, VEC4 quaternion){
+        _matrixRotationQ(mOut, quaternion);
+    }
+
     void matrixTranspose(MATRIX &mOut,const MATRIX &mIn){
         _matrixTranspose(mOut,mIn);
     }
@@ -259,7 +263,6 @@ public:
     void matrixLinearEqSolve(float * const pRes,float ** const pSrc,const int nCnt){
         _matrixLinearEqSolve(pRes,pSrc,nCnt);
     }
-
 
 private:
     // This method checks for physical device compatibility.

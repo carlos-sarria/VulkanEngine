@@ -74,11 +74,31 @@ struct Vertex
     VEC2 tex; // texture UVs.
 };
 
+struct Transform
+{
+    VEC3 translation;
+    VEC4 rotation;
+    VEC3 scale;
+};
+
 struct Mesh
 {
     BufferData vertexBuffer;
     BufferData indexBuffer;
     uint32_t vertexCount;
+    Transform transform;
+};
+
+struct Light
+{
+    uint32_t type;
+    Transform transform;
+};
+
+struct Camera
+{
+    uint32_t type;
+    Transform transform;
 };
 
 struct AppManager
@@ -95,6 +115,8 @@ struct AppManager
     std::vector<VkFramebuffer> frameBuffers;
     std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
     std::vector<Mesh> meshes;
+    std::vector<Camera> cameras;
+    std::vector<Light> lights;
 
     std::vector<VkSemaphore> acquireSemaphore;
     std::vector<VkSemaphore> presentSemaphores;

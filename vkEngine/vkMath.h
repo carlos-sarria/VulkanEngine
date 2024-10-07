@@ -83,6 +83,37 @@ inline void _matrixScaling(
     mOut.f[ 2]=0.0f;	mOut.f[ 6]=0.0f;	mOut.f[10]=fZ;		mOut.f[14]=0.0f;
     mOut.f[ 3]=0.0f;	mOut.f[ 7]=0.0f;	mOut.f[11]=0.0f;	mOut.f[15]=1.0f;
 }
+inline void _matrixRotationQ(
+    MATRIX	&mOut,
+    VEC4 quaternion)
+{
+    // Extract the values from Q
+    float q0 = quaternion.x;
+    float q1 = quaternion.y;
+    float q2 = quaternion.z;
+    float q3 = quaternion.w;
+
+    // First row of the rotation matrix
+    float r00 = 2.0f * (q0 * q0 + q1 * q1) - 1.0f;
+    float r01 = 2.0f * (q1 * q2 - q0 * q3);
+    float r02 = 2.0f * (q1 * q3 + q0 * q2);
+
+    // Second row of the rotation matrix
+    float r10 = 2.0f * (q1 * q2 + q0 * q3);
+    float r11 = 2.0f * (q0 * q0 + q2 * q2) - 1.0f;
+    float r12 = 2.0f * (q2 * q3 - q0 * q1);
+
+    // Third row of the rotation matrix
+    float r20 = 2.0f * (q1 * q3 - q0 * q2);
+    float r21 = 2.0f * (q2 * q3 + q0 * q1);
+    float r22 = 2.0f * (q0 * q0 + q3 * q3) - 1.0f;
+
+    // 3x3 rotation matrix
+    mOut.f[ 0]=r00;	mOut.f[ 4]=r01;	mOut.f[ 8]=r02;	mOut.f[12]=0.0f;
+    mOut.f[ 1]=r10;	mOut.f[ 5]=r11;	mOut.f[ 9]=r12;	mOut.f[13]=0.0f;
+    mOut.f[ 2]=r20;	mOut.f[ 6]=r21;	mOut.f[10]=r22;	mOut.f[14]=0.0f;
+    mOut.f[ 3]=0.0f; mOut.f[ 7]=0.0f; mOut.f[11]=0.0f; mOut.f[15]=1.0f;
+}
 
 inline void _matrixRotationX(
     MATRIX	&mOut,
