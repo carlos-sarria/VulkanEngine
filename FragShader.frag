@@ -13,5 +13,5 @@ layout(location = 0) out mediump vec4 fragColor;
 void main()
 {
 	// Sample the checker board texture and write to the frame buffer attachment.
-	fragColor = texture(triangleTexture, UV) * SHADE;
+        fragColor = vec4(1.0,0.3,0.3,1.0)*SHADE;//texture(triangleTexture, UV) * SHADE;
 }

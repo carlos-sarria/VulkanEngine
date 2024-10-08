@@ -6,9 +6,10 @@ layout(location = 1) in highp vec3 normal;
 layout(location = 2) in mediump vec2 uv;
 
 //// Shader Resources ////
-layout(std140, set = 1, binding = 0) uniform modelViewProjectionBuffer
+layout(std140, set = 1, binding = 0) uniform UniformBufferObject
 {
 	mat4 modelViewProjectionMatrix;
+        vec3 lightDirection;
 };
 
 //// Per Vertex Outputs ////
@@ -19,6 +20,6 @@ void main()
 {
 	// Calculate the ndc position for the current vertex using the model view projection matrix.
 	gl_Position = modelViewProjectionMatrix * vertex;
+        SHADE_OUT = dot(normal,lightDirection)*0.5+0.5;
 	UV_OUT = uv;
-        SHADE_OUT = 0.9;
 }

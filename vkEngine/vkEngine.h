@@ -144,11 +144,6 @@ public:
         _createBuffer(appManager, inBuffer, inData, inUsage);
     }
 
-    // Generic method for creating a dynamic uniform buffer.
-    void createDynamicUniformBuffer(BufferData& inBuffer){
-        _createDynamicUniformBuffer(appManager, inBuffer);
-    }
-
     // Generic method for creating a shader module.
     void createShaderModule(const uint32_t* spvShader, size_t spvShaderSize, int indx, VkShaderStageFlagBits shaderStage){
         createShaderModule(spvShader, spvShaderSize, indx, shaderStage);

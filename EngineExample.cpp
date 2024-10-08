@@ -59,7 +59,7 @@ void multiplyMatrices(std::array<std::array<float, 4>, 4>& first, std::array<std
 	{
 		for (uint32_t j = 0; j < 4; j++)
 		{
-			for (uint32_t k = 0; k < 4; k++) { outMatrix[i][j] += first[i][k] * second[k][j]; }
+            for (uint32_t k = 0; k < 4; k++) { outMatrix[i][j] += first[i][k] * second[k][j]; }
 		}
 	}
 }
@@ -86,11 +86,25 @@ void EngineExample::applyRotation(int idx)
 	auto rotation = std::array<std::array<float, 4>, 4>();
     rotateAroundZ(eng.appManager.angle, rotation);
 
-	auto mvp = std::array<std::array<float, 4>, 4>();
-	multiplyMatrices(rotation, viewProj, mvp);
+    UBO ubo;
+    auto mvp = std::array<std::array<float, 4>, 4>();
+    multiplyMatrices(rotation, viewProj, mvp);
 
-	// Copy the matrix to the mapped memory using the offset calculated above.
-    memcpy(static_cast<unsigned char*>(eng.appManager.dynamicUniformBufferData.mappedData) + eng.appManager.dynamicUniformBufferData.bufferInfo.range * idx, &mvp, sizeof(mvp));
+    ubo.matrixMVP = mvp;
+
+    ubo.lightDirection.x = 0.5f;
+    ubo.lightDirection.y = 0.5f;
+    ubo.lightDirection.z = 0.0f;
+
+    size_t minimumUboAlignment = static_cast<size_t>(eng.appManager.deviceProperties.limits.minUniformBufferOffsetAlignment);
+    uint32_t bufferDataSize = static_cast<uint32_t>(_getAlignedDataSize(sizeof(UBO), minimumUboAlignment));
+    uint32_t scene_offset = 0;
+    for (int i=0; i<eng.appManager.meshes.size(); i++)
+    {
+        // Copy the matrix to the mapped memory using the offset calculated above.
+        memcpy(static_cast<unsigned char*>(eng.appManager.dynamicUniformBufferData.mappedData) + eng.appManager.dynamicUniformBufferData.bufferInfo.range * idx + scene_offset, &ubo, sizeof(UBO));
+        scene_offset += bufferDataSize;
+    }
 
 	VkMappedMemoryRange mapMemRange = {
 		VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE,

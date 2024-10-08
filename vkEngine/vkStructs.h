@@ -2,6 +2,7 @@
 #define VKSTRUCTS_H
 
 #include "vk_getProcAddrs.h"
+#include <array>
 
 #define FENCE_TIMEOUT 0xFFFFFFFFFFFFFFFFL
 #define NUM_DESCRIPTOR_SETS 2
@@ -99,6 +100,12 @@ struct Camera
 {
     uint32_t type;
     Transform transform;
+};
+
+struct UBO
+{
+    std::array<std::array<float, 4>, 4> matrixMVP;
+    VEC3 lightDirection;
 };
 
 struct AppManager

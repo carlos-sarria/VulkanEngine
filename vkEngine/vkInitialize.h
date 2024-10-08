@@ -36,10 +36,9 @@ inline void _initialize(AppManager& appManager, SurfaceData& surfaceData, const 
     _initQueues(appManager);
     _initSwapChain(appManager, surfaceData);
     _initImagesAndViews(appManager);
-    _initCommandPoolAndBuffer(appManager);
-
-    _initShaders(appManager);
     _initVertexBuffers(appManager);
+    _initCommandPoolAndBuffer(appManager);
+    _initShaders(appManager);
     _initUniformBuffers(appManager);
     _initRenderPass(appManager);
     _loadTexture(appManager, appManager.texture);

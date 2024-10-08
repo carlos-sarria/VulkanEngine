@@ -104,18 +104,21 @@ inline void _recordCommandBuffer(AppManager& appManager)
         // required for all of the frames.
         const VkDescriptorSet descriptorSet[] = { appManager.staticDescSet, appManager.dynamicDescSet };
 
-        // An offset is used to select each slice of the uniform buffer object that contains the transformation
-        // matrix related to each swapchain image.
-        // Calculate the offset into the uniform buffer object for the current slice.
-        uint32_t offset = static_cast<uint32_t>(appManager.dynamicUniformBufferData.bufferInfo.range * i);
+        size_t minimumUboAlignment = static_cast<size_t>(appManager.deviceProperties.limits.minUniformBufferOffsetAlignment);
+        uint32_t bufferDataSize = static_cast<uint32_t>(_getAlignedDataSize(sizeof(UBO), minimumUboAlignment));
 
-        // Bind the descriptor sets. The &offset parameter is the offset into the dynamic uniform buffer which is
-        // contained within the dynamic descriptor set.
-        vk::CmdBindDescriptorSets(appManager.cmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, appManager.pipelineLayout, 0, NUM_DESCRIPTOR_SETS, descriptorSet, 1, &offset);
-
+        uint32_t scene_offset = 0;
         for(Mesh m : appManager.meshes)
         {
-            // Bind the vertex buffer.
+            // An offset is used to select each slice of the uniform buffer object that contains the transformation
+            // matrix related to each swapchain image.
+            // Calculate the offset into the uniform buffer object for the current slice.
+            uint32_t offset = static_cast<uint32_t>(appManager.dynamicUniformBufferData.bufferInfo.range * i + scene_offset);
+
+            // Bind the descriptor sets. The &offset parameter is the offset into the dynamic uniform buffer which is
+            // contained within the dynamic descriptor set.
+            vk::CmdBindDescriptorSets(appManager.cmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, appManager.pipelineLayout, 0, NUM_DESCRIPTOR_SETS, descriptorSet, 1, &offset);
+
             vk::CmdBindVertexBuffers(appManager.cmdBuffers[i], 0, 1, &m.vertexBuffer.buffer, vertexOffsets);
 
             // Bind the index buffer.
@@ -123,6 +126,8 @@ inline void _recordCommandBuffer(AppManager& appManager)
 
             // Draw the vertices.
             vk::CmdDrawIndexed(appManager.cmdBuffers[i], m.vertexCount, 1, 0, 0, 0);
+
+            scene_offset += bufferDataSize;
         }
 
         // End the render pass.
