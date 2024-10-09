@@ -58,19 +58,19 @@ void EngineExample::updateUniforms(int idx)
     if(eng.appManager.lights.size()>0)
     {
         LightDir = eng.appManager.cameras[0].transform.translation;
+        //LightDir.x  = 10.0f*cos(eng.appManager.angle); LightDir.y  = 10.0f*sin(eng.appManager.angle); cameraTo.z  = 0.0f;
     }
     else
     {
-        //LightDir.x  = 10.0f*cos(eng.appManager.angle); LightDir.y  = 10.0f*sin(eng.appManager.angle); cameraTo.z  = 0.0f;
         LightDir.x  = 10.0f; LightDir.y  = 10.0f; cameraTo.z  = 0.0f;
     }
 
     MATRIX mProjection, mView;
-    VEC3 vUp = {0.00001f,0.000001f,-1.0f}; // TODO: FIXME if x=y=0.0f and camera x=y=0.0f, the cross product will make the vector 0,0,0
+    VEC3 vUp = {0.00001f,0.000001f, 1.0f}; // TODO: FIXME if x=y=0.0f and camera x=y=0.0f, the cross product will make the vector 0,0,0
     _matrixLookAtRH(mView, cameraPos, cameraTo, vUp);
 
     float aspectRatio = eng.surfaceData.width / eng.surfaceData.height;
-    bool isRotated = (eng.surfaceData.width > eng.surfaceData.height);
+    bool isRotated = (eng.surfaceData.width < eng.surfaceData.height);
     _matrixPerspectiveFovRH(mProjection, 0.78539819f, aspectRatio,  2.0f, 5000.0f, isRotated);
 
     // Set the tarnsformation matrix for each mesh
@@ -82,7 +82,7 @@ void EngineExample::updateUniforms(int idx)
     {
          MATRIX	mRot, mRotX, mTrans, mScale;
          _matrixRotationQ(mRot, mesh.transform.rotation);
-         _matrixRotationZ(mRotX, eng.appManager.angle);
+         _matrixRotationY(mRotX, eng.appManager.angle);
          _matrixTranslation(mTrans, mesh.transform.translation.x, mesh.transform.translation.y, mesh.transform.translation.z);
          _matrixScaling(mScale, mesh.transform.scale.x, mesh.transform.scale.y, mesh.transform.scale.z);
 

@@ -460,7 +460,7 @@ inline void _matrixPerspectiveFovRH(
     f = 1.0f / (float)tan(fFOVy * 0.5f);
     n = 1.0f / (fNear - fFar);
 
-    mOut.f[ 0] = f / fRealAspect;
+    mOut.f[ 0] = -f / fRealAspect; // minus becasue Vulkan is a right-handed coordinate system
     mOut.f[ 1] = 0;
     mOut.f[ 2] = 0;
     mOut.f[ 3] = 0;
