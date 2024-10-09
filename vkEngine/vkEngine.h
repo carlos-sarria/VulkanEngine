@@ -259,6 +259,10 @@ public:
         _matrixLinearEqSolve(pRes,pSrc,nCnt);
     }
 
+    void vectorMultiply(VEC4 &mOut, const VEC4 &vA, const MATRIX &mB){
+        _vectorMultiply(mOut,vA,mB);
+    }
+
 private:
     // This method checks for physical device compatibility.
     VkPhysicalDevice getCompatibleDevice(){

@@ -52,6 +52,10 @@ inline void _recordCommandBuffer(AppManager& appManager)
     // The framebuffer is cleared because, during render pass creation, the loadOp parameter was set to VK_LOAD_OP_CLEAR. Remember
     // that this is crucial as it can reduce system memory bandwidth and reduce power consumption, particularly on PowerVR platforms.
     VkClearValue clearColor = { 0.00f, 0.70f, 0.67f, 1.0f };
+    VkClearValue depthClear;
+    depthClear.depthStencil.depth = 1.f;
+
+    VkClearValue clearValues[] = { clearColor, depthClear };
 
     // This is a constant offset which specifies where the vertex data starts in the vertex
     // buffer. In this case the data just starts at the beginning of the buffer.
@@ -88,8 +92,8 @@ inline void _recordCommandBuffer(AppManager& appManager)
         renderPassInfo.pNext = nullptr;
         renderPassInfo.renderPass = appManager.renderPass;
         renderPassInfo.framebuffer = appManager.frameBuffers[i];
-        renderPassInfo.clearValueCount = 1;
-        renderPassInfo.pClearValues = &clearColor;
+        renderPassInfo.clearValueCount = 2;
+        renderPassInfo.pClearValues = clearValues;
         renderPassInfo.renderArea.extent = appManager.swapchainExtent;
         renderPassInfo.renderArea.offset.x = 0;
         renderPassInfo.renderArea.offset.y = 0;

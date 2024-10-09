@@ -162,6 +162,19 @@ inline void _initPipeline(AppManager& appManager)
 
     debugAssertFunctionResult(vk::CreatePipelineLayout(appManager.device, &pipelineLayoutInfo, nullptr, &appManager.pipelineLayout), "Pipeline Layout Creation");
 
+    // Depth buffer
+    VkPipelineDepthStencilStateCreateInfo depthBufferInfo = {};
+    depthBufferInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+    depthBufferInfo.pNext = nullptr;
+
+    depthBufferInfo.depthTestEnable = VK_TRUE;
+    depthBufferInfo.depthWriteEnable = VK_TRUE;
+    depthBufferInfo.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+    depthBufferInfo.depthBoundsTestEnable = VK_FALSE;
+    depthBufferInfo.minDepthBounds = 0.0f; // Optional
+    depthBufferInfo.maxDepthBounds = 1.0f; // Optional
+    depthBufferInfo.stencilTestEnable = VK_FALSE;
+
     // Create the pipeline by putting all of these elements together.
     VkGraphicsPipelineCreateInfo pipelineInfo;
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -178,7 +191,7 @@ inline void _initPipeline(AppManager& appManager)
     pipelineInfo.pMultisampleState = &multisamplingInfo;
     pipelineInfo.pDynamicState = &dynamicStateInfo;
     pipelineInfo.pViewportState = &viewportInfo;
-    pipelineInfo.pDepthStencilState = nullptr;
+    pipelineInfo.pDepthStencilState = &depthBufferInfo;
     pipelineInfo.pStages = appManager.shaderStages;
     pipelineInfo.stageCount = 2;
     pipelineInfo.renderPass = appManager.renderPass;

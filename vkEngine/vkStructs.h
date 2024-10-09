@@ -40,6 +40,13 @@ struct TextureData
     VkSampler sampler;
 };
 
+class MATRIX
+{
+public:
+    float* operator [] ( const int Row ) { return &f[Row*4]; }
+    float f[16];
+};
+
 typedef struct
 {
     union{
@@ -104,7 +111,7 @@ struct Camera
 
 struct UBO
 {
-    std::array<std::array<float, 4>, 4> matrixMVP;
+    MATRIX matrixMVP;
     VEC3 lightDirection;
 };
 

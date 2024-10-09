@@ -43,7 +43,7 @@ inline void _initRenderPass(AppManager& appManager)
     depthAttachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
     depthAttachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     depthAttachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    depthAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    depthAttachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     depthAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
     depthAttachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     depthAttachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
@@ -66,7 +66,7 @@ inline void _initRenderPass(AppManager& appManager)
     subpassDescription.pPreserveAttachments = nullptr;
     subpassDescription.pResolveAttachments = nullptr;
 
-    VkSubpassDependency subpassDependencies[2];
+    VkSubpassDependency subpassDependencies[3];
     subpassDependencies[0] = {};
     subpassDependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
     subpassDependencies[0].dstSubpass = 0;
@@ -85,6 +85,14 @@ inline void _initRenderPass(AppManager& appManager)
     subpassDependencies[1].dstAccessMask = 0;
     subpassDependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
+    subpassDependencies[2] = {};
+    subpassDependencies[2].srcSubpass = VK_SUBPASS_EXTERNAL;
+    subpassDependencies[2].dstSubpass = 0;
+    subpassDependencies[2].srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+    subpassDependencies[2].srcAccessMask = 0;
+    subpassDependencies[2].dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+    subpassDependencies[2].dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
 
     // Populate a render pass creation info struct.
     // Again, this simply references the single colour attachment and subpass.
@@ -99,7 +107,7 @@ inline void _initRenderPass(AppManager& appManager)
     renderPassInfo.pAttachments = attachments;
     renderPassInfo.pSubpasses = &subpassDescription; // the subpass that was just created.
     renderPassInfo.pDependencies = subpassDependencies;
-    renderPassInfo.dependencyCount = 2;
+    renderPassInfo.dependencyCount = 3;
 
     // Create the render pass object itself.
     debugAssertFunctionResult(vk::CreateRenderPass(appManager.device, &renderPassInfo, nullptr, &appManager.renderPass), "Render pass Creation");

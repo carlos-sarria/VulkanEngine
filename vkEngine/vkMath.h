@@ -5,13 +5,6 @@
 
 const float PI = 3.14159265359f;
 
-class MATRIX
-{
-public:
-    float* operator [] ( const int Row ) { return &f[Row*3]; }
-    float f[9];
-};
-
 static const float fIdentity[16] = {
     1.0f, 0.0f, 0.0f, 0.0f,
     0.0f, 1.0f, 0.0f, 0.0f,
@@ -59,6 +52,23 @@ inline void _matrixMultiply(
     mOut = mRet;
 }
 
+inline void _vectorMultiply(
+    VEC4 &mOut,
+    const VEC4 &mA,
+    const MATRIX &mB)
+{
+    VEC4 mRet;
+
+    /* Perform calculation on a dummy matrix (mRet) */
+    mRet.x = mA.x*mB.f[ 0] + mA.y*mB.f[ 4] + mA.z*mB.f[ 8] + mA.w*mB.f[12];
+    mRet.y = mA.x*mB.f[ 1] + mA.y*mB.f[ 5] + mA.z*mB.f[ 9] + mA.w*mB.f[13];
+    mRet.z = mA.x*mB.f[ 2] + mA.y*mB.f[ 6] + mA.z*mB.f[10] + mA.w*mB.f[14];
+    mRet.w = mA.x*mB.f[ 3] + mA.y*mB.f[ 7] + mA.z*mB.f[11] + mA.w*mB.f[15];
+
+    /* Copy result to mOut */
+    mOut = mRet;
+}
+
 
 inline void _matrixTranslation(
     MATRIX	&mOut,
@@ -85,34 +95,34 @@ inline void _matrixScaling(
 }
 inline void _matrixRotationQ(
     MATRIX	&mOut,
-    VEC4 quaternion)
+    VEC4 &quaternion)
 {
-    // Extract the values from Q
-    float q0 = quaternion.x;
-    float q1 = quaternion.y;
-    float q2 = quaternion.z;
-    float q3 = quaternion.w;
+    // GLTF XYZW order (Blender is WXYZ)
+    // Disable Y+ Up when exporting from Blender as Blender uses Z+ UP
+    float qX = quaternion.x;
+    float qY = quaternion.y;
+    float qZ = quaternion.z;
+    float qW = quaternion.w;
 
-    // First row of the rotation matrix
-    float r00 = 2.0f * (q0 * q0 + q1 * q1) - 1.0f;
-    float r01 = 2.0f * (q1 * q2 - q0 * q3);
-    float r02 = 2.0f * (q1 * q3 + q0 * q2);
+    mOut.f[ 0] = (1 - (2 * qY * qY) - (2 * qZ * qZ));
+    mOut.f[ 4] = ((2 * qX * qY) - (2 * qZ * qW));
+    mOut.f[ 8] = ((2* qX * qZ) + (2 * qY * qW));
+    mOut.f[12] = 0.0f;
 
-    // Second row of the rotation matrix
-    float r10 = 2.0f * (q1 * q2 + q0 * q3);
-    float r11 = 2.0f * (q0 * q0 + q2 * q2) - 1.0f;
-    float r12 = 2.0f * (q2 * q3 - q0 * q1);
+    mOut.f[ 1] = ((2 * qX * qY) + (2 * qZ * qW));
+    mOut.f[ 5] = (1 - (2 * qX * qX) - (2 * qZ *qZ));
+    mOut.f[ 9] = ((2 * qY * qZ) - (2 * qX * qW));
+    mOut.f[13] = 0.0f;
 
-    // Third row of the rotation matrix
-    float r20 = 2.0f * (q1 * q3 - q0 * q2);
-    float r21 = 2.0f * (q2 * q3 + q0 * q1);
-    float r22 = 2.0f * (q0 * q0 + q3 * q3) - 1.0f;
+    mOut.f[ 2] = ((2 * qX * qZ) - (2 * qY * qW));
+    mOut.f[ 6] = ((2 * qY * qZ) + (2 * qX * qW));
+    mOut.f[10] = (1 - (2 * qX * qX) - (2 * qY * qY));
+    mOut.f[14] = 0.0f;
 
-    // 3x3 rotation matrix
-    mOut.f[ 0]=r00;	mOut.f[ 4]=r01;	mOut.f[ 8]=r02;	mOut.f[12]=0.0f;
-    mOut.f[ 1]=r10;	mOut.f[ 5]=r11;	mOut.f[ 9]=r12;	mOut.f[13]=0.0f;
-    mOut.f[ 2]=r20;	mOut.f[ 6]=r21;	mOut.f[10]=r22;	mOut.f[14]=0.0f;
-    mOut.f[ 3]=0.0f; mOut.f[ 7]=0.0f; mOut.f[11]=0.0f; mOut.f[15]=1.0f;
+    mOut.f[3] = 0.0f;
+    mOut.f[7] = 0.0f;
+    mOut.f[11] = 0.0f;
+    mOut.f[15] = 1.0f;
 }
 
 inline void _matrixRotationX(
@@ -266,8 +276,15 @@ inline void _matrixNormalize(
     double temp;
 
     temp = (double)(vIn.x * vIn.x + vIn.y * vIn.y + vIn.z * vIn.z);
-    temp = 1.0 / sqrt(temp);
-    f = (float)temp;
+    if(temp!=0.0f)
+    {
+        temp = 1.0 / sqrt(temp);
+        f = (float)temp;
+    }
+    else
+    {
+        f = 0.0f;
+    }
 
     vOut.x = vIn.x * f;
     vOut.y = vIn.y * f;

@@ -516,14 +516,16 @@ inline void _initImagesAndViews(AppManager& appManager)
     // This vector is used as a temporary vector to hold the retrieved images.
     uint32_t swapchainImageCount;
     std::vector<VkImage> images;
-    VkImage depth_image;
-    VkDeviceMemory depth_memory;
+    std::vector<VkImage> depth_images;
+    std::vector<VkDeviceMemory> depth_memory;
 
     // Get the number of the images which are held by the swapchain. This is set in InitSwapchain function and is the minimum number of images supported.
     debugAssertFunctionResult(vk::GetSwapchainImagesKHR(appManager.device, appManager.swapchain, &swapchainImageCount, nullptr), "SwapChain Images - Get Count");
 
     // Resize the temporary images vector to hold the number of images.
     images.resize(swapchainImageCount);
+    depth_images.resize(swapchainImageCount);
+    depth_memory.resize(swapchainImageCount);
 
     // Resize the application's permanent swapchain images vector to be able to hold the number of images.
     appManager.swapChainImages.resize(swapchainImageCount);
@@ -531,17 +533,19 @@ inline void _initImagesAndViews(AppManager& appManager)
     // Get all of the images from the swapchain and save them in a temporary vector.
     debugAssertFunctionResult(vk::GetSwapchainImagesKHR(appManager.device, appManager.swapchain, &swapchainImageCount, images.data()), "SwapChain Images - Allocate Data");
 
-    createImage(appManager,
-        appManager.swapchainExtent.width, appManager.swapchainExtent.height,
-        VK_FORMAT_D32_SFLOAT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-        depth_image, depth_memory);
 
-    appManager.depth_image = depth_image; // The swapchain can use the same depth buffer for each image as it is cleared at the render start. The views have to be one per chain image
-    appManager.depth_memory = depth_memory;
+  //  appManager.depth_image = depth_image; // The swapchain can use the same depth buffer for each image as it is cleared at the render start. The views have to be one per chain image
+  //  appManager.depth_memory = depth_memory;
 
     // Iterate over each image in order to create an image view for each one.
     for (uint32_t i = 0; i < swapchainImageCount; ++i)
     {
+        // Create a depth buffer per chain
+        createImage(appManager,
+                    appManager.swapchainExtent.width, appManager.swapchainExtent.height,
+                    VK_FORMAT_D32_SFLOAT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                    depth_images[i], depth_memory[i]);
+
         // Copy over the images to the permanent vector.
         appManager.swapChainImages[i].image = images[i];
 
@@ -569,7 +573,7 @@ inline void _initImagesAndViews(AppManager& appManager)
         VkImageViewCreateInfo image_depth_view_info = {};
         image_depth_view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         image_depth_view_info.pNext = nullptr;
-        image_depth_view_info.image = appManager.depth_image;
+        image_depth_view_info.image = depth_images[i];
         image_depth_view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
         image_depth_view_info.format = VK_FORMAT_D32_SFLOAT;
         image_depth_view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;

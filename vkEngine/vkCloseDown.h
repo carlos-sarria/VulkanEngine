@@ -73,7 +73,7 @@ inline void _closeDown(AppManager& appManager)
     for (auto& imagebuffers : appManager.swapChainImages) { vk::DestroyImageView(appManager.device, imagebuffers.view, nullptr); vk::DestroyImageView(appManager.device, imagebuffers.depth_view, nullptr);}
 
     // Free the depth buffer memory
-     vk::FreeMemory(appManager.device, appManager.depth_memory, nullptr);
+    //vk::FreeMemory(appManager.device, appManager.depth_memory, nullptr);
 
     // Free the allocated memory in the command buffers.
     vk::FreeCommandBuffers(appManager.device, appManager.commandPool, static_cast<uint32_t>(appManager.cmdBuffers.size()), appManager.cmdBuffers.data());
