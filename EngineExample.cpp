@@ -57,11 +57,12 @@ void EngineExample::updateUniforms(int idx)
     // Get the lights (first one only)
     if(eng.appManager.lights.size()>0)
     {
-        LightDir = getDirection(eng.appManager.lights[0].transform);
+        LightDir = eng.appManager.cameras[0].transform.translation;
     }
     else
     {
-        LightDir.x  = 0.0f; LightDir.y  = 0.0f; cameraTo.z  = 1.0f;
+        //LightDir.x  = 10.0f*cos(eng.appManager.angle); LightDir.y  = 10.0f*sin(eng.appManager.angle); cameraTo.z  = 0.0f;
+        LightDir.x  = 10.0f; LightDir.y  = 10.0f; cameraTo.z  = 0.0f;
     }
 
     MATRIX mProjection, mView;
@@ -81,31 +82,28 @@ void EngineExample::updateUniforms(int idx)
     {
          MATRIX	mRot, mRotX, mTrans, mScale;
          _matrixRotationQ(mRot, mesh.transform.rotation);
-         _matrixRotationY(mRotX, eng.appManager.angle);
+         _matrixRotationZ(mRotX, eng.appManager.angle);
          _matrixTranslation(mTrans, mesh.transform.translation.x, mesh.transform.translation.y, mesh.transform.translation.z);
          _matrixScaling(mScale, mesh.transform.scale.x, mesh.transform.scale.y, mesh.transform.scale.z);
 
-         eng.appManager.angle += 0.02f;
+         eng.appManager.angle += 0.002f;
 
          // ModelViewMatrix (Model = S*R*T)
-         MATRIX matrixMVP;
-         _matrixIdentity(matrixMVP);
-         _matrixMultiply(matrixMVP, matrixMVP, mScale);
-         _matrixMultiply(matrixMVP, matrixMVP, mRot);
-         _matrixMultiply(matrixMVP, matrixMVP, mRotX);
-         _matrixMultiply(matrixMVP, matrixMVP, mTrans);
-         _matrixMultiply(matrixMVP, matrixMVP, mView);
+         MATRIX matrixModel, matrixMVP;
+         _matrixIdentity(matrixModel);
+         _matrixMultiply(matrixModel, matrixModel, mScale);
+         _matrixMultiply(matrixModel, matrixModel, mRot);
+         _matrixMultiply(matrixModel, matrixModel, mTrans);
+         _matrixMultiply(matrixModel, matrixModel, mRotX);
+         _matrixMultiply(matrixMVP, matrixModel, mView);
          _matrixMultiply(matrixMVP, matrixMVP, mProjection);
 
          UBO ubo;
          ubo.matrixMVP = matrixMVP;
 
-         MATRIX matrixL, matrixInv;
-         _matrixIdentity(matrixL);
-         _matrixMultiply(matrixL, matrixMVP, mRot);
-         _matrixMultiply(matrixL, matrixMVP, mRotX);
-         _matrixInverse(matrixInv, matrixL);
-         VEC4 vOut, vIn = {LightDir.x, LightDir.y, LightDir.z, 1.0f};
+         MATRIX matrixInv;
+         _matrixInverse(matrixInv, matrixModel);
+         VEC4 vOut, vIn = {LightDir.x, LightDir.y, LightDir.z, 0.0f};
          _vectorMultiply(vOut, vIn, matrixInv);
          ubo.lightDirection.x = vOut.x;
          ubo.lightDirection.y = vOut.y;

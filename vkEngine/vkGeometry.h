@@ -29,9 +29,9 @@ static void getTransform(Transform& transform, const tinygltf::Node node)
     transform.rotation.w = (size>0) ? node.rotation[3]: 1.0f;
 
     size = node.scale.size();
-    transform.scale.x = 1.0f;//(size>0) ? node.scale[0] : 1.0f;
-    transform.scale.y = 1.0f;//(size>0) ? node.scale[1] : 1.0f;
-    transform.scale.z = 1.0f;//(size>0) ? node.scale[2] : 1.0f;
+    transform.scale.x = (size>0) ? node.scale[0] : 1.0f;
+    transform.scale.y = (size>0) ? node.scale[1] : 1.0f;
+    transform.scale.z = (size>0) ? node.scale[2] : 1.0f;
 }
 
 

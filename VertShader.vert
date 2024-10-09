@@ -18,8 +18,11 @@ layout(location = 1) out highp float SHADE_OUT;
 
 void main()
 {
+    vec3 light;
+
 	// Calculate the ndc position for the current vertex using the model view projection matrix.
 	gl_Position = modelViewProjectionMatrix * vertex;
-        SHADE_OUT = dot(normal,lightDirection)*0.5+0.5;
+        light = normalize(vec4(lightDirection,0.0)-vertex).xyz;
+        SHADE_OUT = dot(normal,light)*0.5+0.5;
 	UV_OUT = uv;
 }
