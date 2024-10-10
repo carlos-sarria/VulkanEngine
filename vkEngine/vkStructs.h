@@ -2,7 +2,7 @@
 #define VKSTRUCTS_H
 
 #include "vk_getProcAddrs.h"
-#include <array>
+#include "vkMath.h"
 
 #define FENCE_TIMEOUT 0xFFFFFFFFFFFFFFFFL
 #define NUM_DESCRIPTOR_SETS 2
@@ -39,41 +39,6 @@ struct TextureData
     VkImageView view;
     VkSampler sampler;
 };
-
-class MATRIX
-{
-public:
-    float* operator [] ( const int Row ) { return &f[Row*4]; }
-    float f[16];
-};
-
-typedef struct
-{
-    union{
-        float x;
-        float u;
-    };
-    union{
-        float y;
-        float v;
-    };
-} VEC2;
-
-typedef struct
-{
-    float x;	/*!< x coordinate */
-    float y;	/*!< y coordinate */
-    float z;	/*!< z coordinate */
-} VEC3;
-
-typedef struct
-{
-    float x;	/*!< x coordinate */
-    float y;	/*!< y coordinate */
-    float z;	/*!< z coordinate */
-    float w;	/*!< w coordinate */
-} VEC4;
-
 
 struct Vertex
 {

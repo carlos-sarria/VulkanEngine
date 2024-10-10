@@ -12,7 +12,7 @@ void EngineExample::drawFrame()
 {
     eng.startCurrentBuffer();
 
-    updateUniforms(eng.appManager.frameId);
+    updateUniformBuffers(eng.appManager.frameId);
 
     eng.presentCurrentBuffer();
 }
@@ -23,20 +23,17 @@ VEC3 EngineExample::getDirection(Transform transform)
     MATRIX	m;
     VEC4 vOut, vDir = { 0.0f, 0.0f, -1.0f, 0.0f};
 
-    _matrixRotationQ(m, transform.rotation);
-    _vectorMultiply(vOut, vDir, m);
+    m.matrixRotationQ(transform.rotation);
+    vOut = m.vectorMultiply(vDir);
 
     retOut.x = vOut.x; retOut.y = vOut.y; retOut.z = vOut.z;
     return retOut;
 }
 
-void EngineExample::updateUniforms(int idx)
+void EngineExample::updateUniformBuffers(int idx)
 {
     VEC3 cameraPos, cameraTo;
     VEC3 LightDir;
-    MATRIX modelMatrix;
-    MATRIX viewMatrix;
-    MATRIX projectionMatrix;
 
     VEC3 cameraDir;
     // Get the camera (the first one)
@@ -67,11 +64,11 @@ void EngineExample::updateUniforms(int idx)
 
     MATRIX mProjection, mView;
     VEC3 vUp = {0.00001f,0.000001f, 1.0f}; // TODO: FIXME if x=y=0.0f and camera x=y=0.0f, the cross product will make the vector 0,0,0
-    _matrixLookAtRH(mView, cameraPos, cameraTo, vUp);
+    mView.matrixLookAtRH(cameraPos, cameraTo, vUp);
 
     float aspectRatio = eng.surfaceData.width / eng.surfaceData.height;
     bool isRotated = (eng.surfaceData.width < eng.surfaceData.height);
-    _matrixPerspectiveFovRH(mProjection, 0.78539819f, aspectRatio,  2.0f, 5000.0f, isRotated);
+    mProjection.matrixPerspectiveFovRH(0.78539819f, aspectRatio,  2.0f, 5000.0f, isRotated);
 
     // Set the tarnsformation matrix for each mesh
     size_t minimumUboAlignment = static_cast<size_t>(eng.appManager.deviceProperties.limits.minUniformBufferOffsetAlignment);
@@ -81,33 +78,33 @@ void EngineExample::updateUniforms(int idx)
     for (Mesh mesh : eng.appManager.meshes)
     {
          MATRIX	mRot, mRotX, mTrans, mScale;
-         _matrixRotationQ(mRot, mesh.transform.rotation);
-         _matrixRotationY(mRotX, eng.appManager.angle);
-         _matrixTranslation(mTrans, mesh.transform.translation.x, mesh.transform.translation.y, mesh.transform.translation.z);
-         _matrixScaling(mScale, mesh.transform.scale.x, mesh.transform.scale.y, mesh.transform.scale.z);
+         mRot.matrixRotationQ(mesh.transform.rotation);
+         mRotX.matrixRotationZ(eng.appManager.angle);
+         mTrans.matrixTranslation(mesh.transform.translation.x, mesh.transform.translation.y, mesh.transform.translation.z);
+         mScale.matrixScaling(mesh.transform.scale.x, mesh.transform.scale.y, mesh.transform.scale.z);
 
          eng.appManager.angle += 0.002f;
 
-         // ModelViewMatrix (Model = S*R*T)
-         MATRIX matrixModel, matrixMVP;
-         _matrixIdentity(matrixModel);
-         _matrixMultiply(matrixModel, matrixModel, mScale);
-         _matrixMultiply(matrixModel, matrixModel, mRot);
-         _matrixMultiply(matrixModel, matrixModel, mTrans);
-         _matrixMultiply(matrixModel, matrixModel, mRotX);
-         _matrixMultiply(matrixMVP, matrixModel, mView);
-         _matrixMultiply(matrixMVP, matrixMVP, mProjection);
+         // ModelmView (Model = S*R*T)
+         MATRIX mModel, mMVP;
+         mModel.matrixIdentity();
+         mModel.matrixMultiply(mModel, mScale);
+         mModel.matrixMultiply(mModel, mRot);
+         mModel.matrixMultiply(mModel, mTrans);
+         mModel.matrixMultiply(mModel, mRotX);
+         mMVP.matrixMultiply(mModel, mView);
+         mMVP.matrixMultiply(mMVP, mProjection);
 
          UBO ubo;
-         ubo.matrixMVP = matrixMVP;
+         ubo.matrixMVP = mMVP;
 
-         MATRIX matrixInv;
-         _matrixInverse(matrixInv, matrixModel);
+         MATRIX mInv;
+         mInv.matrixInverse(mModel);
          VEC4 vOut, vIn = {LightDir.x, LightDir.y, LightDir.z, 0.0f};
-         _vectorMultiply(vOut, vIn, matrixInv);
-         ubo.lightDirection.x = vOut.x;
-         ubo.lightDirection.y = vOut.y;
-         ubo.lightDirection.z = vOut.z;
+         vOut = mInv.vectorMultiply(vIn);
+         ubo.lightDirection.x =  vOut.x;
+         ubo.lightDirection.y =  vOut.y;
+         ubo.lightDirection.z =  vOut.z;
 
          // Copy the matrix to the mapped memory using the offset calculated above.
          memcpy(static_cast<unsigned char*>(eng.appManager.dynamicUniformBufferData.mappedData) + eng.appManager.dynamicUniformBufferData.bufferInfo.range * idx + scene_offset, &ubo, sizeof(UBO));
@@ -125,8 +122,36 @@ void EngineExample::updateUniforms(int idx)
     // ONLY flush the memory if it does not support VK_MEMORY_PROPERTY_HOST_COHERENT_BIT.
     if ((eng.appManager.dynamicUniformBufferData.memPropFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) == 0) { vk::FlushMappedMemoryRanges(eng.appManager.device, 1, &mapMemRange); }
 }
+///////////////////////////////////////////////////////
 /// <summary>Initialises all Vulkan objects</summary>
+/// ///////////////////////////////////////////////////
 void EngineExample::initialize(const char* appName)
 {
-    eng.initialize(appName);
+    // Initialise all the pointers to Vulkan functions.
+    vk::initVulkan();
+
+    std::vector<std::string> layers = eng.initLayers();
+    std::vector<std::string> instanceExtensions = eng.initInstanceExtensions();
+
+    eng.initApplicationAndInstance(appName, instanceExtensions, layers);
+    eng.initPhysicalDevice();
+    eng.initSurface();
+    eng.initQueuesFamilies();
+    std::vector<std::string> deviceExtensions = eng.initDeviceExtensions();
+    eng.initLogicalDevice(deviceExtensions);
+    eng.initQueues();
+    eng.initSwapChain();
+    eng.initImagesAndViews();
+    eng.loadGLTF();
+    eng.initCommandPoolAndBuffer();
+    eng.initShaders();
+    eng.initUniformBuffers();
+    eng.initRenderPass();
+    eng.loadTexture(eng.appManager.texture);
+    eng.initDescriptorPoolAndSet();
+    eng.initFrameBuffers();
+    eng.initPipeline();
+    eng.initViewportAndScissor();
+    eng.initSemaphoreAndFence();
+    eng.recordCommandBuffer();
 }

@@ -33,7 +33,7 @@ public:
 
     VEC3 getDirection(Transform transform);
 
-    void updateUniforms(int idx = 0);
+    void updateUniformBuffers(int idx = 0);
 
 	// Changes the rotation of the per-frame uniform buffer.
 	void applyRotation(int idx = 0);

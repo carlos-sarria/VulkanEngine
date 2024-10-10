@@ -85,7 +85,6 @@ inline void _initUniformBuffers(AppManager& appManager)
     {
         // Using the minimum uniform buffer offset alignment, the minimum buffer slice size is calculated based on the size of the intended data, or more specifically
         // the size of the smallest chunk of data which may be mapped or updated as a whole.
-        // In this case the size of the intended data is the size of a 4 by 4 matrix and a 3 floats light direction.
         size_t bufferDataSizePerSwapchain = sizeof(UBO);
         bufferDataSizePerSwapchain = static_cast<uint32_t>(_getAlignedDataSize(bufferDataSizePerSwapchain, minimumUboAlignment) * appManager.meshes.size());
 

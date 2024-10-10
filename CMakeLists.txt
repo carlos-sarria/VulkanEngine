@@ -32,7 +32,6 @@ add_executable(VulkanEngine WIN32 ${SRC_FILES}
     vkEngine/vkPipeline.h
     vkEngine/vkFences.h
     vkEngine/vkCommandBuffer.h
-    vkEngine/vkInitialize.h
     vkEngine/vkCloseDown.h
     vkEngine/dds-ktx.h
     vkEngine/tiny_gltf.h

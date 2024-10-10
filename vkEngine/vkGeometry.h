@@ -36,7 +36,7 @@ static void getTransform(Transform& transform, const tinygltf::Node node)
 
 
 /// <summary>Defines the vertices of a simple triangle which can be passed to the vertex shader to be rendered on screen</summary>
-inline void _initVertexBuffers(AppManager& appManager)
+inline void _loadGLTF(AppManager& appManager)
 {
     // Load GLTF
     tinygltf::Model model;
