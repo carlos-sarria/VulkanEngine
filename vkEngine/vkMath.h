@@ -45,8 +45,8 @@ class MATRIX
 {
 public:
     float* operator [] ( const int Row ) { return &f[Row*4]; }
-   // friend MATRIX operator*(MATRIX const& m1, MATRIX const& m2) { MATRIX ret; matrixMultiply(ret,m1,m2); return ret;}
-    //friend MATRIX operator*(VEC4 const& v, MATRIX const& m) { MATRIX ret; _vectorMultiply(ret,v,m); return ret;}
+    MATRIX operator*(MATRIX const& m) { matrixMultiply(*this, m); return *this;}
+    VEC4 operator*(VEC4 const& v) { return vectorMultiply(v);}
     float f[16];
 
 public:
@@ -84,7 +84,7 @@ void matrixMultiply(const MATRIX &mA, const MATRIX &mB)
     mOut.f[14] = mA.f[12]*mB.f[ 2] + mA.f[13]*mB.f[ 6] + mA.f[14]*mB.f[10] + mA.f[15]*mB.f[14];
     mOut.f[15] = mA.f[12]*mB.f[ 3] + mA.f[13]*mB.f[ 7] + mA.f[14]*mB.f[11] + mA.f[15]*mB.f[15];
 
-    memcpy(this->f, mOut.f, sizeof(float)*16);
+    memcpy(this->f, mOut.f, sizeof(mOut.f));
 };
 
 VEC4 vectorMultiply(const VEC4 &mA)
@@ -208,14 +208,19 @@ void matrixRotationZ(const float fAngle)
 
 void matrixTranspose(const MATRIX &mIn)
 {
-    this->f[ 0]=mIn.f[ 0];	this->f[ 4]=mIn.f[ 1];	this->f[ 8]=mIn.f[ 2];	this->f[12]=mIn.f[ 3];
-    this->f[ 1]=mIn.f[ 4];	this->f[ 5]=mIn.f[ 5];	this->f[ 9]=mIn.f[ 6];	this->f[13]=mIn.f[ 7];
-    this->f[ 2]=mIn.f[ 8];	this->f[ 6]=mIn.f[ 9];	this->f[10]=mIn.f[10];	this->f[14]=mIn.f[11];
-    this->f[ 3]=mIn.f[12];	this->f[ 7]=mIn.f[13];	this->f[11]=mIn.f[14];	this->f[15]=mIn.f[15];
+    MATRIX mOut;
+
+    mOut.f[ 0]=mIn.f[ 0];	mOut.f[ 4]=mIn.f[ 1];	mOut.f[ 8]=mIn.f[ 2];	mOut.f[12]=mIn.f[ 3];
+    mOut.f[ 1]=mIn.f[ 4];	mOut.f[ 5]=mIn.f[ 5];	mOut.f[ 9]=mIn.f[ 6];	mOut.f[13]=mIn.f[ 7];
+    mOut.f[ 2]=mIn.f[ 8];	mOut.f[ 6]=mIn.f[ 9];	mOut.f[10]=mIn.f[10];	mOut.f[14]=mIn.f[11];
+    mOut.f[ 3]=mIn.f[12];	mOut.f[ 7]=mIn.f[13];	mOut.f[11]=mIn.f[14];	mOut.f[15]=mIn.f[15];
+
+    memcpy(this->f, mOut.f, sizeof(mOut.f));
 };
 
 void matrixInverse(const MATRIX &mIn)
 {
+    MATRIX mOut;
     double		det_1;
     double		pos, neg, temp;
 
@@ -246,27 +251,29 @@ void matrixInverse(const MATRIX &mIn)
     {
         /* Calculate inverse(A) = adj(A) / det(A) */
         det_1 = 1.0 / det_1;
-        this->f[ 0] =   ( mIn.f[ 5] * mIn.f[10] - mIn.f[ 9] * mIn.f[ 6] ) * (float)det_1;
-        this->f[ 1] = - ( mIn.f[ 1] * mIn.f[10] - mIn.f[ 9] * mIn.f[ 2] ) * (float)det_1;
-        this->f[ 2] =   ( mIn.f[ 1] * mIn.f[ 6] - mIn.f[ 5] * mIn.f[ 2] ) * (float)det_1;
-        this->f[ 4] = - ( mIn.f[ 4] * mIn.f[10] - mIn.f[ 8] * mIn.f[ 6] ) * (float)det_1;
-        this->f[ 5] =   ( mIn.f[ 0] * mIn.f[10] - mIn.f[ 8] * mIn.f[ 2] ) * (float)det_1;
-        this->f[ 6] = - ( mIn.f[ 0] * mIn.f[ 6] - mIn.f[ 4] * mIn.f[ 2] ) * (float)det_1;
-        this->f[ 8] =   ( mIn.f[ 4] * mIn.f[ 9] - mIn.f[ 8] * mIn.f[ 5] ) * (float)det_1;
-        this->f[ 9] = - ( mIn.f[ 0] * mIn.f[ 9] - mIn.f[ 8] * mIn.f[ 1] ) * (float)det_1;
-        this->f[10] =   ( mIn.f[ 0] * mIn.f[ 5] - mIn.f[ 4] * mIn.f[ 1] ) * (float)det_1;
+        mOut.f[ 0] =   ( mIn.f[ 5] * mIn.f[10] - mIn.f[ 9] * mIn.f[ 6] ) * (float)det_1;
+        mOut.f[ 1] = - ( mIn.f[ 1] * mIn.f[10] - mIn.f[ 9] * mIn.f[ 2] ) * (float)det_1;
+        mOut.f[ 2] =   ( mIn.f[ 1] * mIn.f[ 6] - mIn.f[ 5] * mIn.f[ 2] ) * (float)det_1;
+        mOut.f[ 4] = - ( mIn.f[ 4] * mIn.f[10] - mIn.f[ 8] * mIn.f[ 6] ) * (float)det_1;
+        mOut.f[ 5] =   ( mIn.f[ 0] * mIn.f[10] - mIn.f[ 8] * mIn.f[ 2] ) * (float)det_1;
+        mOut.f[ 6] = - ( mIn.f[ 0] * mIn.f[ 6] - mIn.f[ 4] * mIn.f[ 2] ) * (float)det_1;
+        mOut.f[ 8] =   ( mIn.f[ 4] * mIn.f[ 9] - mIn.f[ 8] * mIn.f[ 5] ) * (float)det_1;
+        mOut.f[ 9] = - ( mIn.f[ 0] * mIn.f[ 9] - mIn.f[ 8] * mIn.f[ 1] ) * (float)det_1;
+        mOut.f[10] =   ( mIn.f[ 0] * mIn.f[ 5] - mIn.f[ 4] * mIn.f[ 1] ) * (float)det_1;
 
         /* Calculate -C * inverse(A) */
-        this->f[12] = - ( mIn.f[12] * this->f[ 0] + mIn.f[13] * this->f[ 4] + mIn.f[14] * this->f[ 8] );
-        this->f[13] = - ( mIn.f[12] * this->f[ 1] + mIn.f[13] * this->f[ 5] + mIn.f[14] * this->f[ 9] );
-        this->f[14] = - ( mIn.f[12] * this->f[ 2] + mIn.f[13] * this->f[ 6] + mIn.f[14] * this->f[10] );
+        mOut.f[12] = - ( mIn.f[12] * mOut.f[ 0] + mIn.f[13] * mOut.f[ 4] + mIn.f[14] * mOut.f[ 8] );
+        mOut.f[13] = - ( mIn.f[12] * mOut.f[ 1] + mIn.f[13] * mOut.f[ 5] + mIn.f[14] * mOut.f[ 9] );
+        mOut.f[14] = - ( mIn.f[12] * mOut.f[ 2] + mIn.f[13] * mOut.f[ 6] + mIn.f[14] * mOut.f[10] );
 
         /* Fill in last row */
-        this->f[ 3] = 0.0f;
-        this->f[ 7] = 0.0f;
-        this->f[11] = 0.0f;
-        this->f[15] = 1.0f;
+        mOut.f[ 3] = 0.0f;
+        mOut.f[ 7] = 0.0f;
+        mOut.f[11] = 0.0f;
+        mOut.f[15] = 1.0f;
     }
+
+    memcpy(this->f, mOut.f, sizeof(mOut.f));
 };
 
 VEC3 matrixNormalize(const VEC3 &vIn)
@@ -439,7 +446,7 @@ void matrixPerspectiveFovRH(const float fFOVy, const float fAspect, const float 
     f = 1.0f / (float)tan(fFOVy * 0.5f);
     n = 1.0f / (fNear - fFar);
 
-    this->f[ 0] = -f / fRealAspect; // minus becasue Vulkan is a right-handed coordinate system
+    this->f[ 0] = f / fRealAspect;
     this->f[ 1] = 0;
     this->f[ 2] = 0;
     this->f[ 3] = 0;

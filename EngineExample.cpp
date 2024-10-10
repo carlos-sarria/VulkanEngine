@@ -87,13 +87,8 @@ void EngineExample::updateUniformBuffers(int idx)
 
          // ModelmView (Model = S*R*T)
          MATRIX mModel, mMVP;
-         mModel.matrixIdentity();
-         mModel.matrixMultiply(mModel, mScale);
-         mModel.matrixMultiply(mModel, mRot);
-         mModel.matrixMultiply(mModel, mTrans);
-         mModel.matrixMultiply(mModel, mRotX);
-         mMVP.matrixMultiply(mModel, mView);
-         mMVP.matrixMultiply(mMVP, mProjection);
+         mModel = mScale * mRot * mTrans * mRotX;
+         mMVP = mModel * mView * mProjection;
 
          UBO ubo;
          ubo.matrixMVP = mMVP;
