@@ -12,6 +12,11 @@ static bool myTextureLoadingFunction(tinygltf::Image *image, const int image_idx
         std::string * warn, int req_width, int req_height,
         const unsigned char * bytes, int size, void* user_data)
 {
+    // GLTF does not support DDS
+    // The data received here is just the PNG exported by Blender
+    // we will need to use the texture name and work out the DDS file
+    Log(false, ("TEXTURE NAME: "+image->name).c_str());
+
     return true;
 }
 

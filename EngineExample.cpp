@@ -67,7 +67,7 @@ void EngineExample::updateUniformBuffers(int idx)
     mView.matrixLookAtRH(cameraPos, cameraTo, vUp);
 
     float aspectRatio = eng.surfaceData.width / eng.surfaceData.height;
-    bool isRotated = (eng.surfaceData.width < eng.surfaceData.height);
+    bool isRotated = (eng.surfaceData.width > eng.surfaceData.height);
     mProjection.matrixPerspectiveFovRH(0.78539819f, aspectRatio,  2.0f, 5000.0f, isRotated);
 
     // Set the tarnsformation matrix for each mesh
@@ -79,7 +79,7 @@ void EngineExample::updateUniformBuffers(int idx)
     {
          MATRIX	mRot, mRotX, mTrans, mScale;
          mRot.matrixRotationQ(mesh.transform.rotation);
-         mRotX.matrixRotationZ(eng.appManager.angle);
+         mRotX.matrixRotationZ(0.0f);//eng.appManager.angle);
          mTrans.matrixTranslation(mesh.transform.translation.x, mesh.transform.translation.y, mesh.transform.translation.z);
          mScale.matrixScaling(mesh.transform.scale.x, mesh.transform.scale.y, mesh.transform.scale.z);
 
@@ -96,7 +96,7 @@ void EngineExample::updateUniformBuffers(int idx)
          MATRIX mInv;
          mInv.matrixInverse(mModel);
          VEC4 vOut, vIn = {LightDir.x, LightDir.y, LightDir.z, 0.0f};
-         vOut = mInv.vectorMultiply(vIn);
+         vOut = mInv * vIn;
          ubo.lightDirection.x =  vOut.x;
          ubo.lightDirection.y =  vOut.y;
          ubo.lightDirection.z =  vOut.z;
