@@ -72,6 +72,10 @@ struct Camera
 {
     uint32_t type;
     Transform transform;
+    float aspectRatio;
+    float yfov;
+    float zfar;
+    float znear;
 };
 
 struct UBO

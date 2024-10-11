@@ -74,6 +74,11 @@ inline void _loadGLTF(AppManager& appManager)
 
             getTransform(appManager.cameras[index].transform, node);
             appManager.cameras[index].type = 0;
+            appManager.cameras[index].aspectRatio = model.cameras[index].perspective.aspectRatio;
+            appManager.cameras[index].yfov = model.cameras[index].perspective.yfov;
+            appManager.cameras[index].zfar = model.cameras[index].perspective.zfar;
+            appManager.cameras[index].znear = model.cameras[index].perspective.znear;
+
         }
 
         if (node.light > -1)

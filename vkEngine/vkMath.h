@@ -371,8 +371,8 @@ void matrixLookAtLH(const VEC3 &vEye, const VEC3 &vAt, const VEC3 &vUp)
     mOut.f[14] = 0;
     mOut.f[15] = 1;
 
-    matrixMultiply(mOut);
     matrixTranslation(-vEye.x, -vEye.y, -vEye.z);
+    matrixMultiply(mOut);
 };
 
 void matrixLookAtRH(const VEC3 &vEye, const VEC3 &vAt, const VEC3 &vUp)
@@ -419,8 +419,8 @@ void matrixLookAtRH(const VEC3 &vEye, const VEC3 &vAt, const VEC3 &vUp)
     mOut.f[14] = 0;
     mOut.f[15] = 1;
 
-    matrixMultiply(mOut);
     matrixTranslation(-vEye.x, -vEye.y, -vEye.z);
+    matrixMultiply(mOut);
 };
 
 void matrixPerspectiveFovLH(const float fFOVy, const float fAspect, const float fNear, const float fFar, const bool bRotate)
@@ -481,7 +481,7 @@ void matrixPerspectiveFovRH(const float fFOVy, const float fAspect, const float 
     mOut.f[ 3] = 0;
 
     mOut.f[ 4] = 0;
-    mOut.f[ 5] = f;
+    mOut.f[ 5] = -f; // TODO: Why negative? Needed for Blender models
     mOut.f[ 6] = 0;
     mOut.f[ 7] = 0;
 

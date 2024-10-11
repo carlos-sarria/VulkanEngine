@@ -17,14 +17,14 @@ void EngineExample::drawFrame()
     eng.presentCurrentBuffer();
 }
 
-VEC3 EngineExample::getDirection(Transform transform)
+VEC3 EngineExample::getDirection(Transform transform, VEC3 vUp)
 {
     VEC3 retOut;
     MATRIX	m;
-    VEC4 vOut, vDir = { 0.0f, 0.0f, -1.0f, 0.0f};
+    VEC4 vOut, vUp4 = {vUp.x,vUp.y,vUp.z,0.0f};
 
     m.matrixRotationQ(transform.rotation);
-    vOut = m.vectorMultiply(vDir);
+    vOut = m * vUp4;
 
     retOut.x = vOut.x; retOut.y = vOut.y; retOut.z = vOut.z;
     return retOut;
@@ -34,21 +34,30 @@ void EngineExample::updateUniformBuffers(int idx)
 {
     VEC3 cameraPos, cameraTo;
     VEC3 LightDir;
+    VEC3 vUp = {0.0f,0.0f,-1.0f};
 
     VEC3 cameraDir;
+    float yfov, zfar, znear;
+
     // Get the camera (the first one)
     if(eng.appManager.cameras.size()>0)
     {
         cameraPos = eng.appManager.cameras[0].transform.translation;
-        cameraDir = getDirection(eng.appManager.cameras[0].transform);
+        cameraDir = getDirection(eng.appManager.cameras[0].transform, vUp);
         cameraTo.x = cameraPos.x + cameraDir.x;
         cameraTo.y = cameraPos.y + cameraDir.y;
         cameraTo.z = cameraPos.z + cameraDir.z;
+        yfov = eng.appManager.cameras[0].yfov;
+        zfar = eng.appManager.cameras[0].zfar;
+        znear = eng.appManager.cameras[0].znear;
     }
     else
     {
         cameraPos.x = 0.0f; cameraPos.y = 0.0f; cameraPos.z = 10.0f;
         cameraTo.x  = 0.0f; cameraTo.y  = 0.0f; cameraTo.z  = 9.0f;
+        yfov = 0.39959f;
+        zfar = 100.0f;
+        znear = 0.1f;
     }
 
     // Get the lights (first one only)
@@ -62,13 +71,18 @@ void EngineExample::updateUniformBuffers(int idx)
         LightDir.x  = 10.0f; LightDir.y  = 10.0f; cameraTo.z  = 0.0f;
     }
 
+    // Blender:
+    // up = cam.matrix_world.to_quaternion() * Vector((0.0, 1.0, 0.0))
+    // cam_direction = cam.matrix_world.to_quaternion() * Vector((0.0, 0.0, -1.0))
     MATRIX mView, mProjection;
-    VEC3 vUp = {0.0f, 0.0f, 1.0f};
-    mView.matrixLookAtRH(cameraPos, cameraTo, vUp);
+    vUp.x = 0.0f; vUp.y = 1.0f; vUp.z = 0.0f;
+    VEC3 camRoll = getDirection(eng.appManager.cameras[0].transform, vUp);
+    mView.matrixLookAtRH(cameraPos, cameraTo, camRoll);
 
     float aspectRatio = eng.surfaceData.width / eng.surfaceData.height;
-    bool isRotated = (eng.surfaceData.width > eng.surfaceData.height);
-    mProjection.matrixPerspectiveFovRH(0.78539819f, aspectRatio,  2.0f, 5000.0f, isRotated);
+    bool isRotated = (eng.surfaceData.width < eng.surfaceData.height);
+
+    mProjection.matrixPerspectiveFovRH(yfov, aspectRatio, znear,zfar, isRotated);
 
     // Set the tarnsformation matrix for each mesh
     size_t minimumUboAlignment = static_cast<size_t>(eng.appManager.deviceProperties.limits.minUniformBufferOffsetAlignment);
@@ -113,7 +127,7 @@ void EngineExample::updateUniformBuffers(int idx)
     // ONLY flush the memory if it does not support VK_MEMORY_PROPERTY_HOST_COHERENT_BIT.
     if ((eng.appManager.dynamicUniformBufferData.memPropFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) == 0) { vk::FlushMappedMemoryRanges(eng.appManager.device, 1, &mapMemRange); }
 
-    eng.appManager.angle += 0.02f;
+   // eng.appManager.angle += 0.02f;
 }
 ///////////////////////////////////////////////////////
 /// <summary>Initialises all Vulkan objects</summary>

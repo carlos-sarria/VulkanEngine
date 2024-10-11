@@ -31,7 +31,7 @@ public:
 
     vkEngine eng;
 
-    VEC3 getDirection(Transform transform);
+    VEC3 getDirection(Transform transform, VEC3 vUp);
 
     void updateUniformBuffers(int idx = 0);
 
