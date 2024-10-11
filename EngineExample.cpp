@@ -63,7 +63,8 @@ void EngineExample::updateUniformBuffers(int idx)
     // Get the lights (first one only)
     if(eng.appManager.lights.size()>0)
     {
-        LightDir = eng.appManager.cameras[0].transform.translation;
+        LightDir = eng.appManager.lights[0].transform.translation; // Position as we use point light
+        //LightDir = getDirection(eng.appManager.lights[0].transform, LightDir);
         //LightDir.x  = 10.0f*cos(eng.appManager.angle); LightDir.y  = 10.0f*sin(eng.appManager.angle); cameraTo.z  = 0.0f;
     }
     else
@@ -127,7 +128,7 @@ void EngineExample::updateUniformBuffers(int idx)
     // ONLY flush the memory if it does not support VK_MEMORY_PROPERTY_HOST_COHERENT_BIT.
     if ((eng.appManager.dynamicUniformBufferData.memPropFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) == 0) { vk::FlushMappedMemoryRanges(eng.appManager.device, 1, &mapMemRange); }
 
-   // eng.appManager.angle += 0.02f;
+    eng.appManager.angle += 0.02f;
 }
 ///////////////////////////////////////////////////////
 /// <summary>Initialises all Vulkan objects</summary>
