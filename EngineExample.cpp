@@ -62,7 +62,7 @@ void EngineExample::updateUniformBuffers(int idx)
         LightDir.x  = 10.0f; LightDir.y  = 10.0f; cameraTo.z  = 0.0f;
     }
 
-    MATRIX mProjection, mView;
+    MATRIX mView, mProjection;
     VEC3 vUp = {0.00001f,0.000001f, 1.0f}; // TODO: FIXME if x=y=0.0f and camera x=y=0.0f, the cross product will make the vector 0,0,0
     mView.matrixLookAtRH(cameraPos, cameraTo, vUp);
 
@@ -77,26 +77,24 @@ void EngineExample::updateUniformBuffers(int idx)
 
     for (Mesh mesh : eng.appManager.meshes)
     {
-         MATRIX	mRot, mRotX, mTrans, mScale;
-         mRot.matrixRotationQ(mesh.transform.rotation);
-         mRotX.matrixRotationZ(0.0f);//eng.appManager.angle);
-         mTrans.matrixTranslation(mesh.transform.translation.x, mesh.transform.translation.y, mesh.transform.translation.z);
-         mScale.matrixScaling(mesh.transform.scale.x, mesh.transform.scale.y, mesh.transform.scale.z);
+         MATRIX mModel, mMVP;
+         mModel.matrixScaling(mesh.transform.scale.x, mesh.transform.scale.y, mesh.transform.scale.z);
+         mModel.matrixRotationQ(mesh.transform.rotation);
+         mModel.matrixTranslation(mesh.transform.translation.x, mesh.transform.translation.y, mesh.transform.translation.z);
+         mModel.matrixRotationZ(0.0f);//eng.appManager.angle);
+
+         mMVP = mModel * mView * mProjection;
 
          eng.appManager.angle += 0.002f;
-
-         // ModelmView (Model = S*R*T)
-         MATRIX mModel, mMVP;
-         mModel = mScale * mRot * mTrans * mRotX;
-         mMVP = mModel * mView * mProjection;
 
          UBO ubo;
          ubo.matrixMVP = mMVP;
 
-         MATRIX mInv;
-         mInv.matrixInverse(mModel);
+
+         // Transform the light in the inverse model matrix
+         mModel.matrixInverse();
          VEC4 vOut, vIn = {LightDir.x, LightDir.y, LightDir.z, 0.0f};
-         vOut = mInv * vIn;
+         vOut = mModel * vIn;
          ubo.lightDirection.x =  vOut.x;
          ubo.lightDirection.y =  vOut.y;
          ubo.lightDirection.z =  vOut.z;

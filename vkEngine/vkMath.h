@@ -45,8 +45,11 @@ class MATRIX
 {
 public:
     float* operator [] ( const int Row ) { return &f[Row*4]; }
-    MATRIX operator*(MATRIX const& m) { matrixMultiply(*this, m); return *this;}
+    MATRIX operator*(MATRIX const& m) { matrixMultiply(m); return *this;}
     VEC4 operator*(VEC4 const& v) { return vectorMultiply(v);}
+
+    MATRIX() { matrixIdentity(); }
+
     float f[16];
 
 public:
@@ -59,65 +62,75 @@ void matrixIdentity()
     this->f[ 3]=0.0f;	this->f[ 7]=0.0f;	this->f[11]=0.0f;	this->f[15]=1.0f;
 };
 
-void matrixMultiply(const MATRIX &mA, const MATRIX &mB)
+void matrixMultiply(const MATRIX &m)
 {
     MATRIX mOut;
 
     /* Perform calculation on a dummy matrix (mRet) */
-    mOut.f[ 0] = mA.f[ 0]*mB.f[ 0] + mA.f[ 1]*mB.f[ 4] + mA.f[ 2]*mB.f[ 8] + mA.f[ 3]*mB.f[12];
-    mOut.f[ 1] = mA.f[ 0]*mB.f[ 1] + mA.f[ 1]*mB.f[ 5] + mA.f[ 2]*mB.f[ 9] + mA.f[ 3]*mB.f[13];
-    mOut.f[ 2] = mA.f[ 0]*mB.f[ 2] + mA.f[ 1]*mB.f[ 6] + mA.f[ 2]*mB.f[10] + mA.f[ 3]*mB.f[14];
-    mOut.f[ 3] = mA.f[ 0]*mB.f[ 3] + mA.f[ 1]*mB.f[ 7] + mA.f[ 2]*mB.f[11] + mA.f[ 3]*mB.f[15];
+    mOut.f[ 0] = this->f[ 0]*m.f[ 0] + this->f[ 1]*m.f[ 4] + this->f[ 2]*m.f[ 8] + this->f[ 3]*m.f[12];
+    mOut.f[ 1] = this->f[ 0]*m.f[ 1] + this->f[ 1]*m.f[ 5] + this->f[ 2]*m.f[ 9] + this->f[ 3]*m.f[13];
+    mOut.f[ 2] = this->f[ 0]*m.f[ 2] + this->f[ 1]*m.f[ 6] + this->f[ 2]*m.f[10] + this->f[ 3]*m.f[14];
+    mOut.f[ 3] = this->f[ 0]*m.f[ 3] + this->f[ 1]*m.f[ 7] + this->f[ 2]*m.f[11] + this->f[ 3]*m.f[15];
 
-    mOut.f[ 4] = mA.f[ 4]*mB.f[ 0] + mA.f[ 5]*mB.f[ 4] + mA.f[ 6]*mB.f[ 8] + mA.f[ 7]*mB.f[12];
-    mOut.f[ 5] = mA.f[ 4]*mB.f[ 1] + mA.f[ 5]*mB.f[ 5] + mA.f[ 6]*mB.f[ 9] + mA.f[ 7]*mB.f[13];
-    mOut.f[ 6] = mA.f[ 4]*mB.f[ 2] + mA.f[ 5]*mB.f[ 6] + mA.f[ 6]*mB.f[10] + mA.f[ 7]*mB.f[14];
-    mOut.f[ 7] = mA.f[ 4]*mB.f[ 3] + mA.f[ 5]*mB.f[ 7] + mA.f[ 6]*mB.f[11] + mA.f[ 7]*mB.f[15];
+    mOut.f[ 4] = this->f[ 4]*m.f[ 0] + this->f[ 5]*m.f[ 4] + this->f[ 6]*m.f[ 8] + this->f[ 7]*m.f[12];
+    mOut.f[ 5] = this->f[ 4]*m.f[ 1] + this->f[ 5]*m.f[ 5] + this->f[ 6]*m.f[ 9] + this->f[ 7]*m.f[13];
+    mOut.f[ 6] = this->f[ 4]*m.f[ 2] + this->f[ 5]*m.f[ 6] + this->f[ 6]*m.f[10] + this->f[ 7]*m.f[14];
+    mOut.f[ 7] = this->f[ 4]*m.f[ 3] + this->f[ 5]*m.f[ 7] + this->f[ 6]*m.f[11] + this->f[ 7]*m.f[15];
 
-    mOut.f[ 8] = mA.f[ 8]*mB.f[ 0] + mA.f[ 9]*mB.f[ 4] + mA.f[10]*mB.f[ 8] + mA.f[11]*mB.f[12];
-    mOut.f[ 9] = mA.f[ 8]*mB.f[ 1] + mA.f[ 9]*mB.f[ 5] + mA.f[10]*mB.f[ 9] + mA.f[11]*mB.f[13];
-    mOut.f[10] = mA.f[ 8]*mB.f[ 2] + mA.f[ 9]*mB.f[ 6] + mA.f[10]*mB.f[10] + mA.f[11]*mB.f[14];
-    mOut.f[11] = mA.f[ 8]*mB.f[ 3] + mA.f[ 9]*mB.f[ 7] + mA.f[10]*mB.f[11] + mA.f[11]*mB.f[15];
+    mOut.f[ 8] = this->f[ 8]*m.f[ 0] + this->f[ 9]*m.f[ 4] + this->f[10]*m.f[ 8] + this->f[11]*m.f[12];
+    mOut.f[ 9] = this->f[ 8]*m.f[ 1] + this->f[ 9]*m.f[ 5] + this->f[10]*m.f[ 9] + this->f[11]*m.f[13];
+    mOut.f[10] = this->f[ 8]*m.f[ 2] + this->f[ 9]*m.f[ 6] + this->f[10]*m.f[10] + this->f[11]*m.f[14];
+    mOut.f[11] = this->f[ 8]*m.f[ 3] + this->f[ 9]*m.f[ 7] + this->f[10]*m.f[11] + this->f[11]*m.f[15];
 
-    mOut.f[12] = mA.f[12]*mB.f[ 0] + mA.f[13]*mB.f[ 4] + mA.f[14]*mB.f[ 8] + mA.f[15]*mB.f[12];
-    mOut.f[13] = mA.f[12]*mB.f[ 1] + mA.f[13]*mB.f[ 5] + mA.f[14]*mB.f[ 9] + mA.f[15]*mB.f[13];
-    mOut.f[14] = mA.f[12]*mB.f[ 2] + mA.f[13]*mB.f[ 6] + mA.f[14]*mB.f[10] + mA.f[15]*mB.f[14];
-    mOut.f[15] = mA.f[12]*mB.f[ 3] + mA.f[13]*mB.f[ 7] + mA.f[14]*mB.f[11] + mA.f[15]*mB.f[15];
+    mOut.f[12] = this->f[12]*m.f[ 0] + this->f[13]*m.f[ 4] + this->f[14]*m.f[ 8] + this->f[15]*m.f[12];
+    mOut.f[13] = this->f[12]*m.f[ 1] + this->f[13]*m.f[ 5] + this->f[14]*m.f[ 9] + this->f[15]*m.f[13];
+    mOut.f[14] = this->f[12]*m.f[ 2] + this->f[13]*m.f[ 6] + this->f[14]*m.f[10] + this->f[15]*m.f[14];
+    mOut.f[15] = this->f[12]*m.f[ 3] + this->f[13]*m.f[ 7] + this->f[14]*m.f[11] + this->f[15]*m.f[15];
 
     memcpy(this->f, mOut.f, sizeof(mOut.f));
 };
 
-VEC4 vectorMultiply(const VEC4 &mA)
+VEC4 vectorMultiply(const VEC4 &m)
 {
-    VEC4 mRet;
+    VEC4 vRet;
 
     /* Perform calculation on a dummy matrix (mRet) */
-    mRet.x = mA.x*this->f[ 0] + mA.y*this->f[ 4] + mA.z*this->f[ 8] + mA.w*this->f[12];
-    mRet.y = mA.x*this->f[ 1] + mA.y*this->f[ 5] + mA.z*this->f[ 9] + mA.w*this->f[13];
-    mRet.z = mA.x*this->f[ 2] + mA.y*this->f[ 6] + mA.z*this->f[10] + mA.w*this->f[14];
-    mRet.w = mA.x*this->f[ 3] + mA.y*this->f[ 7] + mA.z*this->f[11] + mA.w*this->f[15];
+    vRet.x = m.x*this->f[ 0] + m.y*this->f[ 4] + m.z*this->f[ 8] + m.w*this->f[12];
+    vRet.y = m.x*this->f[ 1] + m.y*this->f[ 5] + m.z*this->f[ 9] + m.w*this->f[13];
+    vRet.z = m.x*this->f[ 2] + m.y*this->f[ 6] + m.z*this->f[10] + m.w*this->f[14];
+    vRet.w = m.x*this->f[ 3] + m.y*this->f[ 7] + m.z*this->f[11] + m.w*this->f[15];
 
-    return mRet;
+    return vRet;
 };
 
 void matrixTranslation(const float fX, const float fY, const float fZ)
 {
-    this->f[ 0]=1.0f;	this->f[ 4]=0.0f;	this->f[ 8]=0.0f;	this->f[12]=fX;
-    this->f[ 1]=0.0f;	this->f[ 5]=1.0f;	this->f[ 9]=0.0f;	this->f[13]=fY;
-    this->f[ 2]=0.0f;	this->f[ 6]=0.0f;	this->f[10]=1.0f;	this->f[14]=fZ;
-    this->f[ 3]=0.0f;	this->f[ 7]=0.0f;	this->f[11]=0.0f;	this->f[15]=1.0f;
+    MATRIX mTemp;
+
+    mTemp.f[ 0]=1.0f;	mTemp.f[ 4]=0.0f;	mTemp.f[ 8]=0.0f;	mTemp.f[12]=fX;
+    mTemp.f[ 1]=0.0f;	mTemp.f[ 5]=1.0f;	mTemp.f[ 9]=0.0f;	mTemp.f[13]=fY;
+    mTemp.f[ 2]=0.0f;	mTemp.f[ 6]=0.0f;	mTemp.f[10]=1.0f;	mTemp.f[14]=fZ;
+    mTemp.f[ 3]=0.0f;	mTemp.f[ 7]=0.0f;	mTemp.f[11]=0.0f;	mTemp.f[15]=1.0f;
+
+    matrixMultiply(mTemp);
 };
 
 void matrixScaling(const float fX, const float fY, const float fZ)
 {
-    this->f[ 0]=fX;		this->f[ 4]=0.0f;	this->f[ 8]=0.0f;	this->f[12]=0.0f;
-    this->f[ 1]=0.0f;	this->f[ 5]=fY;		this->f[ 9]=0.0f;	this->f[13]=0.0f;
-    this->f[ 2]=0.0f;	this->f[ 6]=0.0f;	this->f[10]=fZ;		this->f[14]=0.0f;
-    this->f[ 3]=0.0f;	this->f[ 7]=0.0f;	this->f[11]=0.0f;	this->f[15]=1.0f;
+    MATRIX mTemp;
+
+    mTemp.f[ 0]=fX;     mTemp.f[ 4]=0.0f;	mTemp.f[ 8]=0.0f;	mTemp.f[12]=0.0f;
+    mTemp.f[ 1]=0.0f;	mTemp.f[ 5]=fY;     mTemp.f[ 9]=0.0f;	mTemp.f[13]=0.0f;
+    mTemp.f[ 2]=0.0f;	mTemp.f[ 6]=0.0f;	mTemp.f[10]=fZ;     mTemp.f[14]=0.0f;
+    mTemp.f[ 3]=0.0f;	mTemp.f[ 7]=0.0f;	mTemp.f[11]=0.0f;	mTemp.f[15]=1.0f;
+
+    matrixMultiply(mTemp);
 };
 
 void matrixRotationQ(VEC4 &quaternion)
 {
+    MATRIX mTemp;
+
     // GLTF XYZW order (Blender is WXYZ)
     // Disable Y+ Up when exporting from Blender as Blender uses Z+ UP
     float qX = quaternion.x;
@@ -125,30 +138,33 @@ void matrixRotationQ(VEC4 &quaternion)
     float qZ = quaternion.z;
     float qW = quaternion.w;
 
-    this->f[ 0] = (1 - (2 * qY * qY) - (2 * qZ * qZ));
-    this->f[ 4] = ((2 * qX * qY) - (2 * qZ * qW));
-    this->f[ 8] = ((2* qX * qZ) + (2 * qY * qW));
-    this->f[12] = 0.0f;
+    mTemp.f[ 0] = (1 - (2 * qY * qY) - (2 * qZ * qZ));
+    mTemp.f[ 4] = ((2 * qX * qY) - (2 * qZ * qW));
+    mTemp.f[ 8] = ((2* qX * qZ) + (2 * qY * qW));
+    mTemp.f[12] = 0.0f;
 
-    this->f[ 1] = ((2 * qX * qY) + (2 * qZ * qW));
-    this->f[ 5] = (1 - (2 * qX * qX) - (2 * qZ *qZ));
-    this->f[ 9] = ((2 * qY * qZ) - (2 * qX * qW));
-    this->f[13] = 0.0f;
+    mTemp.f[ 1] = ((2 * qX * qY) + (2 * qZ * qW));
+    mTemp.f[ 5] = (1 - (2 * qX * qX) - (2 * qZ *qZ));
+    mTemp.f[ 9] = ((2 * qY * qZ) - (2 * qX * qW));
+    mTemp.f[13] = 0.0f;
 
-    this->f[ 2] = ((2 * qX * qZ) - (2 * qY * qW));
-    this->f[ 6] = ((2 * qY * qZ) + (2 * qX * qW));
-    this->f[10] = (1 - (2 * qX * qX) - (2 * qY * qY));
-    this->f[14] = 0.0f;
+    mTemp.f[ 2] = ((2 * qX * qZ) - (2 * qY * qW));
+    mTemp.f[ 6] = ((2 * qY * qZ) + (2 * qX * qW));
+    mTemp.f[10] = (1 - (2 * qX * qX) - (2 * qY * qY));
+    mTemp.f[14] = 0.0f;
 
-    this->f[3] = 0.0f;
-    this->f[7] = 0.0f;
-    this->f[11] = 0.0f;
-    this->f[15] = 1.0f;
+    mTemp.f[3] = 0.0f;
+    mTemp.f[7] = 0.0f;
+    mTemp.f[11] = 0.0f;
+    mTemp.f[15] = 1.0f;
+
+    matrixMultiply(mTemp);
 };
 
 void matrixRotationX(const float fAngle)
 {
-    float		fCosine, fSine;
+    MATRIX mTemp;
+    float fCosine, fSine;
 
     /* Precompute cos and sin */
 #if defined(BUILD_DX)
@@ -160,15 +176,18 @@ void matrixRotationX(const float fAngle)
 #endif
 
     /* Create the trigonometric matrix corresponding to X Rotation */
-    this->f[ 0]=1.0f;	this->f[ 4]=0.0f;	this->f[ 8]=0.0f;	this->f[12]=0.0f;
-    this->f[ 1]=0.0f;	this->f[ 5]=fCosine;this->f[ 9]=fSine;	this->f[13]=0.0f;
-    this->f[ 2]=0.0f;	this->f[ 6]=-fSine;	this->f[10]=fCosine;this->f[14]=0.0f;
-    this->f[ 3]=0.0f;	this->f[ 7]=0.0f;	this->f[11]=0.0f;	this->f[15]=1.0f;
+    mTemp.f[ 0]=1.0f;	mTemp.f[ 4]=0.0f;	mTemp.f[ 8]=0.0f;	mTemp.f[12]=0.0f;
+    mTemp.f[ 1]=0.0f;	mTemp.f[ 5]=fCosine;mTemp.f[ 9]=fSine;	mTemp.f[13]=0.0f;
+    mTemp.f[ 2]=0.0f;	mTemp.f[ 6]=-fSine;	mTemp.f[10]=fCosine;mTemp.f[14]=0.0f;
+    mTemp.f[ 3]=0.0f;	mTemp.f[ 7]=0.0f;	mTemp.f[11]=0.0f;	mTemp.f[15]=1.0f;
+
+    matrixMultiply(mTemp);
 };
 
 void matrixRotationY(const float fAngle)
 {
-    float		fCosine, fSine;
+    MATRIX mTemp;
+    float fCosine, fSine;
 
     /* Precompute cos and sin */
 #if defined(BUILD_DX)
@@ -180,15 +199,18 @@ void matrixRotationY(const float fAngle)
 #endif
 
     /* Create the trigonometric matrix corresponding to Y Rotation */
-    this->f[ 0]=fCosine;	this->f[ 4]=0.0f;	this->f[ 8]=-fSine;		this->f[12]=0.0f;
-    this->f[ 1]=0.0f;		this->f[ 5]=1.0f;	this->f[ 9]=0.0f;		this->f[13]=0.0f;
-    this->f[ 2]=fSine;		this->f[ 6]=0.0f;	this->f[10]=fCosine;	this->f[14]=0.0f;
-    this->f[ 3]=0.0f;		this->f[ 7]=0.0f;	this->f[11]=0.0f;		this->f[15]=1.0f;
+    mTemp.f[ 0]=fCosine;	mTemp.f[ 4]=0.0f;	mTemp.f[ 8]=-fSine;		mTemp.f[12]=0.0f;
+    mTemp.f[ 1]=0.0f;		mTemp.f[ 5]=1.0f;	mTemp.f[ 9]=0.0f;		mTemp.f[13]=0.0f;
+    mTemp.f[ 2]=fSine;		mTemp.f[ 6]=0.0f;	mTemp.f[10]=fCosine;	mTemp.f[14]=0.0f;
+    mTemp.f[ 3]=0.0f;		mTemp.f[ 7]=0.0f;	mTemp.f[11]=0.0f;		mTemp.f[15]=1.0f;
+
+    matrixMultiply(mTemp);
 };
 
 void matrixRotationZ(const float fAngle)
 {
-    float		fCosine, fSine;
+    MATRIX mTemp;
+    float fCosine, fSine;
 
     /* Precompute cos and sin */
 #if defined(BUILD_DX)
@@ -200,45 +222,47 @@ void matrixRotationZ(const float fAngle)
 #endif
 
     /* Create the trigonometric matrix corresponding to Z Rotation */
-    this->f[ 0]=fCosine;	this->f[ 4]=fSine;	this->f[ 8]=0.0f;	this->f[12]=0.0f;
-    this->f[ 1]=-fSine;		this->f[ 5]=fCosine;this->f[ 9]=0.0f;	this->f[13]=0.0f;
-    this->f[ 2]=0.0f;		this->f[ 6]=0.0f;	this->f[10]=1.0f;	this->f[14]=0.0f;
-    this->f[ 3]=0.0f;		this->f[ 7]=0.0f;	this->f[11]=0.0f;	this->f[15]=1.0f;
+    mTemp.f[ 0]=fCosine;	mTemp.f[ 4]=fSine;	mTemp.f[ 8]=0.0f;	mTemp.f[12]=0.0f;
+    mTemp.f[ 1]=-fSine;		mTemp.f[ 5]=fCosine;mTemp.f[ 9]=0.0f;	mTemp.f[13]=0.0f;
+    mTemp.f[ 2]=0.0f;		mTemp.f[ 6]=0.0f;	mTemp.f[10]=1.0f;	mTemp.f[14]=0.0f;
+    mTemp.f[ 3]=0.0f;		mTemp.f[ 7]=0.0f;	mTemp.f[11]=0.0f;	mTemp.f[15]=1.0f;
+
+    matrixMultiply(mTemp);
 };
 
-void matrixTranspose(const MATRIX &mIn)
+void matrixTranspose()
 {
     MATRIX mOut;
 
-    mOut.f[ 0]=mIn.f[ 0];	mOut.f[ 4]=mIn.f[ 1];	mOut.f[ 8]=mIn.f[ 2];	mOut.f[12]=mIn.f[ 3];
-    mOut.f[ 1]=mIn.f[ 4];	mOut.f[ 5]=mIn.f[ 5];	mOut.f[ 9]=mIn.f[ 6];	mOut.f[13]=mIn.f[ 7];
-    mOut.f[ 2]=mIn.f[ 8];	mOut.f[ 6]=mIn.f[ 9];	mOut.f[10]=mIn.f[10];	mOut.f[14]=mIn.f[11];
-    mOut.f[ 3]=mIn.f[12];	mOut.f[ 7]=mIn.f[13];	mOut.f[11]=mIn.f[14];	mOut.f[15]=mIn.f[15];
+    mOut.f[ 0]=this->f[ 0];	mOut.f[ 4]=this->f[ 1];	mOut.f[ 8]=this->f[ 2];	mOut.f[12]=this->f[ 3];
+    mOut.f[ 1]=this->f[ 4];	mOut.f[ 5]=this->f[ 5];	mOut.f[ 9]=this->f[ 6];	mOut.f[13]=this->f[ 7];
+    mOut.f[ 2]=this->f[ 8];	mOut.f[ 6]=this->f[ 9];	mOut.f[10]=this->f[10];	mOut.f[14]=this->f[11];
+    mOut.f[ 3]=this->f[12];	mOut.f[ 7]=this->f[13];	mOut.f[11]=this->f[14];	mOut.f[15]=this->f[15];
 
     memcpy(this->f, mOut.f, sizeof(mOut.f));
 };
 
-void matrixInverse(const MATRIX &mIn)
+void matrixInverse()
 {
     MATRIX mOut;
-    double		det_1;
-    double		pos, neg, temp;
+    double det_1;
+    double pos, neg, temp;
 
     /* Calculate the determinant of submatrix A and determine if the
        the matrix is singular as limited by the double precision
        floating-point data representation. */
     pos = neg = 0.0;
-    temp =  mIn.f[ 0] * mIn.f[ 5] * mIn.f[10];
+    temp =  this->f[ 0] * this->f[ 5] * this->f[10];
     if (temp >= 0.0) pos += temp; else neg += temp;
-    temp =  mIn.f[ 4] * mIn.f[ 9] * mIn.f[ 2];
+    temp =  this->f[ 4] * this->f[ 9] * this->f[ 2];
     if (temp >= 0.0) pos += temp; else neg += temp;
-    temp =  mIn.f[ 8] * mIn.f[ 1] * mIn.f[ 6];
+    temp =  this->f[ 8] * this->f[ 1] * this->f[ 6];
     if (temp >= 0.0) pos += temp; else neg += temp;
-    temp = -mIn.f[ 8] * mIn.f[ 5] * mIn.f[ 2];
+    temp = -this->f[ 8] * this->f[ 5] * this->f[ 2];
     if (temp >= 0.0) pos += temp; else neg += temp;
-    temp = -mIn.f[ 4] * mIn.f[ 1] * mIn.f[10];
+    temp = -this->f[ 4] * this->f[ 1] * this->f[10];
     if (temp >= 0.0) pos += temp; else neg += temp;
-    temp = -mIn.f[ 0] * mIn.f[ 9] * mIn.f[ 6];
+    temp = -this->f[ 0] * this->f[ 9] * this->f[ 6];
     if (temp >= 0.0) pos += temp; else neg += temp;
     det_1 = pos + neg;
 
@@ -251,20 +275,20 @@ void matrixInverse(const MATRIX &mIn)
     {
         /* Calculate inverse(A) = adj(A) / det(A) */
         det_1 = 1.0 / det_1;
-        mOut.f[ 0] =   ( mIn.f[ 5] * mIn.f[10] - mIn.f[ 9] * mIn.f[ 6] ) * (float)det_1;
-        mOut.f[ 1] = - ( mIn.f[ 1] * mIn.f[10] - mIn.f[ 9] * mIn.f[ 2] ) * (float)det_1;
-        mOut.f[ 2] =   ( mIn.f[ 1] * mIn.f[ 6] - mIn.f[ 5] * mIn.f[ 2] ) * (float)det_1;
-        mOut.f[ 4] = - ( mIn.f[ 4] * mIn.f[10] - mIn.f[ 8] * mIn.f[ 6] ) * (float)det_1;
-        mOut.f[ 5] =   ( mIn.f[ 0] * mIn.f[10] - mIn.f[ 8] * mIn.f[ 2] ) * (float)det_1;
-        mOut.f[ 6] = - ( mIn.f[ 0] * mIn.f[ 6] - mIn.f[ 4] * mIn.f[ 2] ) * (float)det_1;
-        mOut.f[ 8] =   ( mIn.f[ 4] * mIn.f[ 9] - mIn.f[ 8] * mIn.f[ 5] ) * (float)det_1;
-        mOut.f[ 9] = - ( mIn.f[ 0] * mIn.f[ 9] - mIn.f[ 8] * mIn.f[ 1] ) * (float)det_1;
-        mOut.f[10] =   ( mIn.f[ 0] * mIn.f[ 5] - mIn.f[ 4] * mIn.f[ 1] ) * (float)det_1;
+        mOut.f[ 0] =   ( this->f[ 5] * this->f[10] - this->f[ 9] * this->f[ 6] ) * (float)det_1;
+        mOut.f[ 1] = - ( this->f[ 1] * this->f[10] - this->f[ 9] * this->f[ 2] ) * (float)det_1;
+        mOut.f[ 2] =   ( this->f[ 1] * this->f[ 6] - this->f[ 5] * this->f[ 2] ) * (float)det_1;
+        mOut.f[ 4] = - ( this->f[ 4] * this->f[10] - this->f[ 8] * this->f[ 6] ) * (float)det_1;
+        mOut.f[ 5] =   ( this->f[ 0] * this->f[10] - this->f[ 8] * this->f[ 2] ) * (float)det_1;
+        mOut.f[ 6] = - ( this->f[ 0] * this->f[ 6] - this->f[ 4] * this->f[ 2] ) * (float)det_1;
+        mOut.f[ 8] =   ( this->f[ 4] * this->f[ 9] - this->f[ 8] * this->f[ 5] ) * (float)det_1;
+        mOut.f[ 9] = - ( this->f[ 0] * this->f[ 9] - this->f[ 8] * this->f[ 1] ) * (float)det_1;
+        mOut.f[10] =   ( this->f[ 0] * this->f[ 5] - this->f[ 4] * this->f[ 1] ) * (float)det_1;
 
         /* Calculate -C * inverse(A) */
-        mOut.f[12] = - ( mIn.f[12] * mOut.f[ 0] + mIn.f[13] * mOut.f[ 4] + mIn.f[14] * mOut.f[ 8] );
-        mOut.f[13] = - ( mIn.f[12] * mOut.f[ 1] + mIn.f[13] * mOut.f[ 5] + mIn.f[14] * mOut.f[ 9] );
-        mOut.f[14] = - ( mIn.f[12] * mOut.f[ 2] + mIn.f[13] * mOut.f[ 6] + mIn.f[14] * mOut.f[10] );
+        mOut.f[12] = - ( this->f[12] * mOut.f[ 0] + this->f[13] * mOut.f[ 4] + this->f[14] * mOut.f[ 8] );
+        mOut.f[13] = - ( this->f[12] * mOut.f[ 1] + this->f[13] * mOut.f[ 5] + this->f[14] * mOut.f[ 9] );
+        mOut.f[14] = - ( this->f[12] * mOut.f[ 2] + this->f[13] * mOut.f[ 6] + this->f[14] * mOut.f[10] );
 
         /* Fill in last row */
         mOut.f[ 3] = 0.0f;
@@ -315,7 +339,7 @@ VEC3 matrixCrossProduct(const VEC3 &v1, const VEC3 &v2)
 void matrixLookAtLH(const VEC3 &vEye, const VEC3 &vAt, const VEC3 &vUp)
 {
     VEC3 f, s, u;
-    MATRIX	t;
+    MATRIX	mOut;
 
     f.x = vEye.x - vAt.x;
     f.y = vEye.y - vAt.y;
@@ -327,34 +351,34 @@ void matrixLookAtLH(const VEC3 &vEye, const VEC3 &vAt, const VEC3 &vUp)
     u = matrixCrossProduct(s, f);
     u = matrixNormalize(u);
 
-    this->f[ 0] = s.x;
-    this->f[ 1] = u.x;
-    this->f[ 2] = -f.x;
-    this->f[ 3] = 0;
+    mOut.f[ 0] = s.x;
+    mOut.f[ 1] = u.x;
+    mOut.f[ 2] = -f.x;
+    mOut.f[ 3] = 0;
 
-    this->f[ 4] = s.y;
-    this->f[ 5] = u.y;
-    this->f[ 6] = -f.y;
-    this->f[ 7] = 0;
+    mOut.f[ 4] = s.y;
+    mOut.f[ 5] = u.y;
+    mOut.f[ 6] = -f.y;
+    mOut.f[ 7] = 0;
 
-    this->f[ 8] = s.z;
-    this->f[ 9] = u.z;
-    this->f[10] = -f.z;
-    this->f[11] = 0;
+    mOut.f[ 8] = s.z;
+    mOut.f[ 9] = u.z;
+    mOut.f[10] = -f.z;
+    mOut.f[11] = 0;
 
-    this->f[12] = 0;
-    this->f[13] = 0;
-    this->f[14] = 0;
-    this->f[15] = 1;
+    mOut.f[12] = 0;
+    mOut.f[13] = 0;
+    mOut.f[14] = 0;
+    mOut.f[15] = 1;
 
-    t.matrixTranslation(-vEye.x, -vEye.y, -vEye.z);
-    this->matrixMultiply(t, *this);
+    matrixMultiply(mOut);
+    matrixTranslation(-vEye.x, -vEye.y, -vEye.z);
 };
 
 void matrixLookAtRH(const VEC3 &vEye, const VEC3 &vAt, const VEC3 &vUp)
 {
     VEC3 f, s, u;
-    MATRIX	t, p;
+    MATRIX	mOut, t, p;
 
     f.x = vAt.x - vEye.x;
     f.y = vAt.y - vEye.y;
@@ -366,39 +390,33 @@ void matrixLookAtRH(const VEC3 &vEye, const VEC3 &vAt, const VEC3 &vUp)
     u = matrixCrossProduct(s, f);
     u = matrixNormalize(u);
 
-    p.f[ 0] = s.x;
-    p.f[ 1] = u.x;
-    p.f[ 2] = -f.x;
-    p.f[ 3] = 0;
+    mOut.f[ 0] = s.x;
+    mOut.f[ 1] = u.x;
+    mOut.f[ 2] = -f.x;
+    mOut.f[ 3] = 0;
 
-    p.f[ 4] = s.y;
-    p.f[ 5] = u.y;
-    p.f[ 6] = -f.y;
-    p.f[ 7] = 0;
+    mOut.f[ 4] = s.y;
+    mOut.f[ 5] = u.y;
+    mOut.f[ 6] = -f.y;
+    mOut.f[ 7] = 0;
 
-    p.f[ 8] = s.z;
-    p.f[ 9] = u.z;
-    p.f[10] = -f.z;
-    p.f[11] = 0;
+    mOut.f[ 8] = s.z;
+    mOut.f[ 9] = u.z;
+    mOut.f[10] = -f.z;
+    mOut.f[11] = 0;
 
-    p.f[12] = 0;
-    p.f[13] = 0;
-    p.f[14] = 0;
-    p.f[15] = 1;
+    mOut.f[12] = 0;
+    mOut.f[13] = 0;
+    mOut.f[14] = 0;
+    mOut.f[15] = 1;
 
-    t.matrixTranslation(-vEye.x, -vEye.y, -vEye.z);
-    matrixMultiply(t, p);
+    matrixMultiply(mOut);
+    matrixTranslation(-vEye.x, -vEye.y, -vEye.z);
 };
-
-void matrixVRotate ()
-{
-    MATRIX mRotation;
-    mRotation.matrixRotationZ(-90.0f*PI/180.0f);
-    this->matrixMultiply(*this, mRotation);
-}
 
 void matrixPerspectiveFovLH(const float fFOVy, const float fAspect, const float fNear, const float fFar, const bool bRotate)
 {
+    MATRIX mOut;
     float f, n, fRealAspect;
 
     if (bRotate)
@@ -410,31 +428,33 @@ void matrixPerspectiveFovLH(const float fFOVy, const float fAspect, const float 
     f = 1.0f / (float)tan(fFOVy * 0.5f);
     n = 1.0f / (fFar - fNear);
 
-    this->f[ 0] = f / fRealAspect;
-    this->f[ 1] = 0;
-    this->f[ 2] = 0;
-    this->f[ 3] = 0;
+    mOut.f[ 0] = f / fRealAspect;
+    mOut.f[ 1] = 0;
+    mOut.f[ 2] = 0;
+    mOut.f[ 3] = 0;
 
-    this->f[ 4] = 0;
-    this->f[ 5] = f;
-    this->f[ 6] = 0;
-    this->f[ 7] = 0;
+    mOut.f[ 4] = 0;
+    mOut.f[ 5] = f;
+    mOut.f[ 6] = 0;
+    mOut.f[ 7] = 0;
 
-    this->f[ 8] = 0;
-    this->f[ 9] = 0;
-    this->f[10] = fFar * n;
-    this->f[11] = 1;
+    mOut.f[ 8] = 0;
+    mOut.f[ 9] = 0;
+    mOut.f[10] = fFar * n;
+    mOut.f[11] = 1;
 
-    this->f[12] = 0;
-    this->f[13] = 0;
-    this->f[14] = -fFar * fNear * n;
-    this->f[15] = 0;
+    mOut.f[12] = 0;
+    mOut.f[13] = 0;
+    mOut.f[14] = -fFar * fNear * n;
+    mOut.f[15] = 0;
 
-    if (bRotate) matrixVRotate();
+    matrixMultiply(mOut);
+    if (bRotate) matrixRotationZ(-90.0f*PI/180.0f);
 };
 
 void matrixPerspectiveFovRH(const float fFOVy, const float fAspect, const float fNear, const float fFar, const bool bRotate)
 {
+    MATRIX mOut;
     float f, n, fRealAspect;
 
     if (bRotate)
@@ -446,77 +466,84 @@ void matrixPerspectiveFovRH(const float fFOVy, const float fAspect, const float 
     f = 1.0f / (float)tan(fFOVy * 0.5f);
     n = 1.0f / (fNear - fFar);
 
-    this->f[ 0] = f / fRealAspect;
-    this->f[ 1] = 0;
-    this->f[ 2] = 0;
-    this->f[ 3] = 0;
+    mOut.f[ 0] = f / fRealAspect;
+    mOut.f[ 1] = 0;
+    mOut.f[ 2] = 0;
+    mOut.f[ 3] = 0;
 
-    this->f[ 4] = 0;
-    this->f[ 5] = f;
-    this->f[ 6] = 0;
-    this->f[ 7] = 0;
+    mOut.f[ 4] = 0;
+    mOut.f[ 5] = f;
+    mOut.f[ 6] = 0;
+    mOut.f[ 7] = 0;
 
-    this->f[ 8] = 0;
-    this->f[ 9] = 0;
-    this->f[10] = (fFar + fNear) * n;
-    this->f[11] = -1;
+    mOut.f[ 8] = 0;
+    mOut.f[ 9] = 0;
+    mOut.f[10] = (fFar + fNear) * n;
+    mOut.f[11] = -1;
 
-    this->f[12] = 0;
-    this->f[13] = 0;
-    this->f[14] = (2 * fFar * fNear) * n;
-    this->f[15] = 0;
+    mOut.f[12] = 0;
+    mOut.f[13] = 0;
+    mOut.f[14] = (2 * fFar * fNear) * n;
+    mOut.f[15] = 0;
 
-    if (bRotate) matrixVRotate();
+    matrixMultiply(mOut);
+    if (bRotate) matrixRotationZ(-90.0f*PI/180.0f);
 };
 
 void matrixOrthoLH(const float w, const float h, const float zn, const float zf, const bool  bRotate)
 {
-    this->f[ 0] = 2 / w;
-    this->f[ 1] = 0;
-    this->f[ 2] = 0;
-    this->f[ 3] = 0;
+    MATRIX mOut;
 
-    this->f[ 4] = 0;
-    this->f[ 5] = 2 / h;
-    this->f[ 6] = 0;
-    this->f[ 7] = 0;
+    mOut.f[ 0] = 2 / w;
+    mOut.f[ 1] = 0;
+    mOut.f[ 2] = 0;
+    mOut.f[ 3] = 0;
 
-    this->f[ 8] = 0;
-    this->f[ 9] = 0;
-    this->f[10] = 1 / (zf - zn);
-    this->f[11] = zn / (zn - zf);
+    mOut.f[ 4] = 0;
+    mOut.f[ 5] = 2 / h;
+    mOut.f[ 6] = 0;
+    mOut.f[ 7] = 0;
 
-    this->f[12] = 0;
-    this->f[13] = 0;
-    this->f[14] = 0;
-    this->f[15] = 1;
+    mOut.f[ 8] = 0;
+    mOut.f[ 9] = 0;
+    mOut.f[10] = 1 / (zf - zn);
+    mOut.f[11] = zn / (zn - zf);
 
-    if (bRotate) matrixVRotate();
+    mOut.f[12] = 0;
+    mOut.f[13] = 0;
+    mOut.f[14] = 0;
+    mOut.f[15] = 1;
+
+    matrixMultiply(mOut);
+    if (bRotate) matrixRotationZ (-90.0f*PI/180.0f);
 };
 
 void matrixOrthoRH(const float w, const float h, const float zn, const float zf, const bool  bRotate)
 {
-    this->f[ 0] = 2 / w;
-    this->f[ 1] = 0;
-    this->f[ 2] = 0;
-    this->f[ 3] = 0;
+    MATRIX mOut;
 
-    this->f[ 4] = 0;
-    this->f[ 5] = 2 / h;
-    this->f[ 6] = 0;
-    this->f[ 7] = 0;
+    mOut.f[ 0] = 2 / w;
+    mOut.f[ 1] = 0;
+    mOut.f[ 2] = 0;
+    mOut.f[ 3] = 0;
 
-    this->f[ 8] = 0;
-    this->f[ 9] = 0;
-    this->f[10] = 1 / (zn - zf);
-    this->f[11] = zn / (zn - zf);
+    mOut.f[ 4] = 0;
+    mOut.f[ 5] = 2 / h;
+    mOut.f[ 6] = 0;
+    mOut.f[ 7] = 0;
 
-    this->f[12] = 0;
-    this->f[13] = 0;
-    this->f[14] = 0;
-    this->f[15] = 1;
+    mOut.f[ 8] = 0;
+    mOut.f[ 9] = 0;
+    mOut.f[10] = 1 / (zn - zf);
+    mOut.f[11] = zn / (zn - zf);
 
-    if (bRotate) matrixVRotate();
+    mOut.f[12] = 0;
+    mOut.f[13] = 0;
+    mOut.f[14] = 0;
+    mOut.f[15] = 1;
+
+    matrixMultiply(mOut);
+    if (bRotate) matrixRotationZ(-90.0f*PI/180.0f);
 };
 
 VEC3 matrixLerp(const VEC3 &v1, const VEC3 &v2, const float s)
@@ -609,8 +636,9 @@ void matrixLinearEqSolve(
     pRes[nCnt-1] = f;
 };
 
-void matrixInverseEx(const MATRIX &mIn)
+void matrixInverseEx()
 {
+    MATRIX mOut;
     float *ppfRows[4];
     float pfRes[4];
     float pfIn[20];
@@ -625,16 +653,18 @@ void matrixInverseEx(const MATRIX &mIn)
         for(j = 0; j < 4; ++j)
         {
             ppfRows[j][0] = fIdentity[i + 4 * j];
-            memcpy(&ppfRows[j][1], &mIn.f[j * 4], 4 * sizeof(float));
+            memcpy(&ppfRows[j][1], &this->f[j * 4], 4 * sizeof(float));
         }
 
         matrixLinearEqSolve(pfRes, (float**)ppfRows, 4);
 
         for(j = 0; j < 4; ++j)
         {
-            this->f[i + 4 * j] = pfRes[j];
+            mOut.f[i + 4 * j] = pfRes[j];
         }
     }
+
+    memcpy(this->f, mOut.f, sizeof(mOut.f));
 };
 
 }; // End of MATRIX
