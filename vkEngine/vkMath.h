@@ -390,6 +390,15 @@ void matrixLookAtRH(const VEC3 &vEye, const VEC3 &vAt, const VEC3 &vUp)
     u = matrixCrossProduct(s, f);
     u = matrixNormalize(u);
 
+    // Fix for when vectors are parallel
+    if (s.x==0.0f && s.y==0.0f && s.z==0.0f){
+            VEC3 newUp = {vUp.x+0.0000001f,vUp.y+0.0000001f,vUp.z+0.0000001f};
+            s = matrixCrossProduct(f, newUp);
+            s = matrixNormalize(s);
+            u = matrixCrossProduct(s, f);
+            u = matrixNormalize(u);
+    }
+
     mOut.f[ 0] = s.x;
     mOut.f[ 1] = u.x;
     mOut.f[ 2] = -f.x;

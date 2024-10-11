@@ -63,7 +63,7 @@ void EngineExample::updateUniformBuffers(int idx)
     }
 
     MATRIX mView, mProjection;
-    VEC3 vUp = {0.00001f,0.000001f, 1.0f}; // TODO: FIXME if x=y=0.0f and camera x=y=0.0f, the cross product will make the vector 0,0,0
+    VEC3 vUp = {0.0f, 0.0f, 1.0f};
     mView.matrixLookAtRH(cameraPos, cameraTo, vUp);
 
     float aspectRatio = eng.surfaceData.width / eng.surfaceData.height;
@@ -81,17 +81,15 @@ void EngineExample::updateUniformBuffers(int idx)
          mModel.matrixScaling(mesh.transform.scale.x, mesh.transform.scale.y, mesh.transform.scale.z);
          mModel.matrixRotationQ(mesh.transform.rotation);
          mModel.matrixTranslation(mesh.transform.translation.x, mesh.transform.translation.y, mesh.transform.translation.z);
-         mModel.matrixRotationZ(0.0f);//eng.appManager.angle);
+         mModel.matrixRotationZ(eng.appManager.angle);
 
          mMVP = mModel * mView * mProjection;
-
-         eng.appManager.angle += 0.002f;
 
          UBO ubo;
          ubo.matrixMVP = mMVP;
 
-
-         // Transform the light in the inverse model matrix
+         // Transform the light using the inverse model matrix. This will
+         // allow to do smooth shading with just a dot product in the vertex shader
          mModel.matrixInverse();
          VEC4 vOut, vIn = {LightDir.x, LightDir.y, LightDir.z, 0.0f};
          vOut = mModel * vIn;
@@ -114,6 +112,8 @@ void EngineExample::updateUniformBuffers(int idx)
 
     // ONLY flush the memory if it does not support VK_MEMORY_PROPERTY_HOST_COHERENT_BIT.
     if ((eng.appManager.dynamicUniformBufferData.memPropFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) == 0) { vk::FlushMappedMemoryRanges(eng.appManager.device, 1, &mapMemRange); }
+
+    eng.appManager.angle += 0.02f;
 }
 ///////////////////////////////////////////////////////
 /// <summary>Initialises all Vulkan objects</summary>
