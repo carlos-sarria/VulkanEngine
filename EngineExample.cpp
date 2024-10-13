@@ -18,7 +18,7 @@ void EngineExample::drawFrame()
 }
 
 #define ROT_SPEED (0.1f*PI/180.0f)
-#define MOV_SPEED 0.5f
+#define MOV_SPEED 0.3f
 void EngineExample::updateCamera(char keyPressed, const bool mousePressed, const long mousePointX, const long mousePointY)
 {
     Camera *camera = &eng.appManager.defaultCamera;
@@ -35,11 +35,9 @@ void EngineExample::updateCamera(char keyPressed, const bool mousePressed, const
     }
 
     MATRIX mLookAt;
-    angle.x += (float)(mousePrevX-mousePointX);
-    angle.y += (float)(mousePrevY-mousePointY);
+    angle.x += (float)(mousePointX-mousePrevX);
+    angle.y += (float)(mousePointY-mousePrevY);
 
-    // mLookAt.matrixRotationY(angle.x*ROT_SPEED);
-    // mLookAt.matrixRotationX(angle.y*ROT_SPEED);
     VEC3 euler = {angle.y*ROT_SPEED, angle.x*ROT_SPEED, 0.0f};
     VEC4 quaternion = mLookAt.matrixQuaternion(euler);
 
@@ -47,14 +45,25 @@ void EngineExample::updateCamera(char keyPressed, const bool mousePressed, const
 
     vLookAt = mLookAt * vLookAt;
 
-    float displacement = 0.0f;
-    if(keyPressed == 'W') displacement = MOV_SPEED;
-    if(keyPressed == 'S') displacement = -MOV_SPEED;
-    if(displacement!=0.0f)
+    float zoom = 0.0f, pan = 0.0f;
+    if(keyPressed == 'W') zoom =  MOV_SPEED;
+    if(keyPressed == 'S') zoom = -MOV_SPEED;
+    if(keyPressed == 'A') pan  =  MOV_SPEED;
+    if(keyPressed == 'D') pan  = -MOV_SPEED;
+    if(zoom!=0.0f)
     {
-        pos.x = pos.x - vLookAt.x * displacement;
-        pos.y = pos.y - vLookAt.y * displacement;
-        pos.z = pos.z - vLookAt.z * displacement;
+        pos.x = pos.x - vLookAt.x * zoom;
+        pos.y = pos.y - vLookAt.y * zoom;
+        pos.z = pos.z - vLookAt.z * zoom;
+    }
+    if(pan!=0.0f)
+    {
+        VEC3 vUp = {0.0f,1.0f,0.0f};
+        VEC3 vDir = {vLookAt.x,vLookAt.y,vLookAt.z};
+        VEC3 cross = mLookAt.matrixCrossProduct(vDir, vUp);
+        pos.x = pos.x + cross.x * pan;
+        pos.y = pos.y + cross.y * pan;
+        pos.z = pos.z + cross.z * pan;
     }
 
     mousePrevX = mousePointX;
