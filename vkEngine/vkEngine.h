@@ -85,8 +85,8 @@ public:
     }
 
     // Create vertex buffers to draw the primitive.
-    void loadGLTF(){
-        _loadGLTF(appManager);
+    void loadGLTF(const char* fileName){
+        _loadGLTF(appManager, fileName);
     }
 
     // Create a texture to apply to the primitive.

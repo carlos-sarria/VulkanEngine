@@ -31,6 +31,8 @@ public:
 
     vkEngine eng;
 
+    void updateCamera(char keyPressed, const long mousePointX, const long mousePointY);
+
     VEC3 getDirection(Transform transform, VEC3 vUp);
 
     void updateUniformBuffers(int idx = 0);
@@ -45,5 +47,5 @@ public:
     void deinitialize() { eng.closeDown(); }
 
 	// Execute the command buffer and present the result to the surface.
-	void drawFrame();
+    void drawFrame();
 };

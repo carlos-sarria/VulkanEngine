@@ -41,21 +41,20 @@ static void getTransform(Transform& transform, const tinygltf::Node node)
 
 
 /// <summary>Defines the vertices of a simple triangle which can be passed to the vertex shader to be rendered on screen</summary>
-inline void _loadGLTF(AppManager& appManager)
+inline void _loadGLTF(AppManager& appManager, const char* fileName)
 {
     // Load GLTF
     tinygltf::Model model;
     tinygltf::TinyGLTF gltf_ctx;
     std::string err;
     std::string warn;
-    const char* file_name = "..\\..\\suzanne.glb";
 
     gltf_ctx.SetImageLoader(myTextureLoadingFunction, nullptr);
 
     gltf_ctx.SetStoreOriginalJSONForExtrasAndExtensions(false);
 
     bool ret = false;
-    ret = gltf_ctx.LoadBinaryFromFile(&model, &err, &warn, file_name);
+    ret = gltf_ctx.LoadBinaryFromFile(&model, &err, &warn, fileName);
 
     if(!ret){
         Log(true, ("GLTF - "+err).c_str());

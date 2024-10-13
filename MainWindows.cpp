@@ -75,9 +75,19 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE, _In_ LPSTR lpCmdL
 
     // Loop
     MSG msg;
+    POINT mousePoint;
+    unsigned char keyPressed;
+    vulkanExample.eng.appManager.frameId = 0;
     while(PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
     {
         if(msg.message == WM_QUIT) break;
+
+        GetCursorPos(&mousePoint);
+        keyPressed = 0;
+
+        for (keyPressed=0; keyPressed<128; keyPressed++) if (GetAsyncKeyState(keyPressed) & (1<<15)) break;
+        vulkanExample.updateCamera(keyPressed, mousePoint.x, mousePoint.y);
+
         vulkanExample.drawFrame();
 
         TranslateMessage(&msg);

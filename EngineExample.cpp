@@ -17,6 +17,31 @@ void EngineExample::drawFrame()
     eng.presentCurrentBuffer();
 }
 
+void EngineExample::updateCamera(char keyPressed, const long mousePointX, const long mousePointY)
+{
+    Camera *camera = &eng.appManager.defaultCamera;
+    static VEC3 pos = {0.0f, 0.0f,10.0f};
+    static VEC3 to = {0.0f, 0.0f,9.0f};
+
+    if(keyPressed == 'W') pos.z += 0.1f;
+    if(keyPressed == 'S') pos.z -= 0.1f;
+
+    camera->from.x = pos.x; camera->from.y = pos.y; camera->from.z = pos.z;
+    camera->to.x = to.x; camera->to.y = to.y; camera->to.z = to.z;
+    camera->yfov = 0.39959f;
+    camera->zfar = 1000.0f;
+    camera->znear = 0.1f;
+
+    // float radHalfAngle = ... / 2.0; //See below
+    // float sinVal = Math.Sin(radHalfAngle);
+    // float cosVal = Math.Cos(radHalfAngle);
+    // float xVal = 1.0f * sinVal;
+    // float yVal = 0.0f * sinVal;  //Here for completeness.
+    // float zVal = 0.0f * sinVal;  //Here for completeness.
+    // Quaternion rot = new Quaternion(xVal, yVal, zVal, cosVal);
+}
+
+
 VEC3 EngineExample::getDirection(Transform transform, VEC3 vUp)
 {
     VEC3 retOut;
@@ -32,6 +57,7 @@ VEC3 EngineExample::getDirection(Transform transform, VEC3 vUp)
 
 void EngineExample::updateUniformBuffers(int idx)
 {
+    Camera camera = eng.appManager.defaultCamera;
     VEC3 cameraPos, cameraTo;
     VEC3 LightDir;
     VEC3 vUp = {0.0f,0.0f,-1.0f};
@@ -69,21 +95,21 @@ void EngineExample::updateUniformBuffers(int idx)
     }
     else
     {
-        LightDir.x  = 10.0f; LightDir.y  = 10.0f; cameraTo.z  = 0.0f;
+        LightDir.x  = 10.0f; LightDir.y  = 10.0f; LightDir.z  = 0.0f;
     }
 
     // Blender:
     // up = cam.matrix_world.to_quaternion() * Vector((0.0, 1.0, 0.0))
     // cam_direction = cam.matrix_world.to_quaternion() * Vector((0.0, 0.0, -1.0))
     MATRIX mView, mProjection;
-    vUp.x = 0.0f; vUp.y = 1.0f; vUp.z = 0.0f;
-    VEC3 camRoll = getDirection(eng.appManager.cameras[0].transform, vUp);
-    mView.matrixLookAtRH(cameraPos, cameraTo, camRoll);
+    // vUp.x = 0.0f; vUp.y = 1.0f; vUp.z = 0.0f;
+    // VEC3 camRoll = getDirection(eng.appManager.cameras[0].transform, vUp);
+    mView.matrixLookAtRH(camera.from, camera.to, vUp);
 
     float aspectRatio = eng.surfaceData.width / eng.surfaceData.height;
     bool isRotated = (eng.surfaceData.width < eng.surfaceData.height);
 
-    mProjection.matrixPerspectiveFovRH(yfov, aspectRatio, znear,zfar, isRotated);
+    mProjection.matrixPerspectiveFovRH(camera.yfov, aspectRatio, camera.znear, camera.zfar, isRotated);
 
     // Set the tarnsformation matrix for each mesh
     size_t minimumUboAlignment = static_cast<size_t>(eng.appManager.deviceProperties.limits.minUniformBufferOffsetAlignment);
@@ -150,7 +176,7 @@ void EngineExample::initialize(const char* appName)
     eng.initQueues();
     eng.initSwapChain();
     eng.initImagesAndViews();
-    eng.loadGLTF();
+    eng.loadGLTF("..\\..\\suzanne.glb");
     eng.initCommandPoolAndBuffer();
     eng.initShaders();
     eng.initUniformBuffers();

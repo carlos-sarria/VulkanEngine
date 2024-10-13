@@ -73,6 +73,8 @@ struct Camera
     uint32_t type;
     Transform transform;
     float aspectRatio;
+    VEC3 from;
+    VEC3 to;
     float yfov;
     float zfar;
     float znear;
@@ -139,13 +141,14 @@ struct AppManager
     VkImage depth_image;
     VkDeviceMemory depth_memory;
 
-    float angle;
     uint32_t offset;
 
-    int frameId;
+    unsigned int frameId;
     uint32_t currentBuffer;
 
-    uint32_t padding;
+    Camera defaultCamera;
+
+    float angle;
 };
 
 // The Surface Data structure is different based on the platform being used.

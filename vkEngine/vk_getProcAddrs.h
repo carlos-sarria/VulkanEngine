@@ -395,7 +395,7 @@ static std::string debugGetVKResultString(const VkResult inRes)
 inline void debugAssertFunctionResult(const VkResult inRes, const std::string inOperation)
 {
 #ifdef DEBUG
-    Log(true, (inOperation + " -- " + debugGetVKResultString(inRes)).c_str());
+    if(inRes != VK_SUCCESS) Log(true, (inOperation + " -- " + debugGetVKResultString(inRes)).c_str());
     assert(inRes == VK_SUCCESS);
 #endif
 }

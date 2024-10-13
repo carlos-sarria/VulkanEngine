@@ -418,7 +418,7 @@ inline void _initSwapChain(AppManager& appManager, SurfaceData& surfaceData)
     swapchainInfo.presentMode = appManager.presentMode;
     swapchainInfo.minImageCount = surfaceImageCount;
     swapchainInfo.oldSwapchain = VK_NULL_HANDLE;
-    swapchainInfo.clipped = VK_TRUE;
+    swapchainInfo.clipped = VK_TRUE; // TODO Enable proper clipping of poligons VK_POINT_CLIPPING_BEHAVIOR_USER_CLIP_PLANES_ONLY
     swapchainInfo.imageExtent.width = appManager.swapchainExtent.width;
     swapchainInfo.imageExtent.height = appManager.swapchainExtent.height;
     swapchainInfo.imageArrayLayers = 1;
