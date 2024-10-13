@@ -17,28 +17,60 @@ void EngineExample::drawFrame()
     eng.presentCurrentBuffer();
 }
 
-void EngineExample::updateCamera(char keyPressed, const long mousePointX, const long mousePointY)
+#define ROT_SPEED (0.1f*PI/180.0f)
+#define MOV_SPEED 0.5f
+void EngineExample::updateCamera(char keyPressed, const bool mousePressed, const long mousePointX, const long mousePointY)
 {
     Camera *camera = &eng.appManager.defaultCamera;
+    VEC4 vLookAt = {0.0f,0.0f,1.0f,0.0f};
     static VEC3 pos = {0.0f, 0.0f,10.0f};
-    static VEC3 to = {0.0f, 0.0f,9.0f};
+    static long mousePrevX, mousePrevY;
+    static VEC2 angle;
+    static bool bFirstTime = true;
 
-    if(keyPressed == 'W') pos.z += 0.1f;
-    if(keyPressed == 'S') pos.z -= 0.1f;
+    if (bFirstTime || !mousePressed){
+        mousePrevX = mousePointX;
+        mousePrevY = mousePointY;
+        bFirstTime = false;
+    }
 
-    camera->from.x = pos.x; camera->from.y = pos.y; camera->from.z = pos.z;
-    camera->to.x = to.x; camera->to.y = to.y; camera->to.z = to.z;
+    MATRIX mLookAt;
+    angle.x += (float)(mousePrevX-mousePointX);
+    angle.y += (float)(mousePrevY-mousePointY);
+
+    // mLookAt.matrixRotationY(angle.x*ROT_SPEED);
+    // mLookAt.matrixRotationX(angle.y*ROT_SPEED);
+    VEC3 euler = {angle.y*ROT_SPEED, angle.x*ROT_SPEED, 0.0f};
+    VEC4 quaternion = mLookAt.matrixQuaternion(euler);
+
+    mLookAt.matrixRotationQ(quaternion);
+
+    vLookAt = mLookAt * vLookAt;
+
+    float displacement = 0.0f;
+    if(keyPressed == 'W') displacement = MOV_SPEED;
+    if(keyPressed == 'S') displacement = -MOV_SPEED;
+    if(displacement!=0.0f)
+    {
+        pos.x = pos.x - vLookAt.x * displacement;
+        pos.y = pos.y - vLookAt.y * displacement;
+        pos.z = pos.z - vLookAt.z * displacement;
+    }
+
+    mousePrevX = mousePointX;
+    mousePrevY = mousePointY;
+
+    camera->from.x = pos.x;
+    camera->from.y = pos.y;
+    camera->from.z = pos.z;
+
+    camera->to.x = pos.x - vLookAt.x;
+    camera->to.y = pos.y - vLookAt.y;
+    camera->to.z = pos.z - vLookAt.z;
+
     camera->yfov = 0.39959f;
     camera->zfar = 1000.0f;
     camera->znear = 0.1f;
-
-    // float radHalfAngle = ... / 2.0; //See below
-    // float sinVal = Math.Sin(radHalfAngle);
-    // float cosVal = Math.Cos(radHalfAngle);
-    // float xVal = 1.0f * sinVal;
-    // float yVal = 0.0f * sinVal;  //Here for completeness.
-    // float zVal = 0.0f * sinVal;  //Here for completeness.
-    // Quaternion rot = new Quaternion(xVal, yVal, zVal, cosVal);
 }
 
 
@@ -66,25 +98,26 @@ void EngineExample::updateUniformBuffers(int idx)
     float yfov, zfar, znear;
 
     // Get the camera (the first one)
-    if(eng.appManager.cameras.size()>0)
-    {
-        cameraPos = eng.appManager.cameras[0].transform.translation;
-        cameraDir = getDirection(eng.appManager.cameras[0].transform, vUp);
-        cameraTo.x = cameraPos.x + cameraDir.x;
-        cameraTo.y = cameraPos.y + cameraDir.y;
-        cameraTo.z = cameraPos.z + cameraDir.z;
-        yfov = eng.appManager.cameras[0].yfov;
-        zfar = eng.appManager.cameras[0].zfar;
-        znear = eng.appManager.cameras[0].znear;
-    }
-    else
-    {
-        cameraPos.x = 0.0f; cameraPos.y = 0.0f; cameraPos.z = 10.0f;
-        cameraTo.x  = 0.0f; cameraTo.y  = 0.0f; cameraTo.z  = 9.0f;
-        yfov = 0.39959f;
-        zfar = 100.0f;
-        znear = 0.1f;
-    }
+    // if(eng.appManager.cameras.size()>0)
+    // {
+    //      VEC3 vUp = {0.0f,0.0f,-1.0f};
+    //     cameraPos = eng.appManager.cameras[0].transform.translation;
+    //     cameraDir = getDirection(eng.appManager.cameras[0].transform, vUp);
+    //     cameraTo.x = cameraPos.x + cameraDir.x;
+    //     cameraTo.y = cameraPos.y + cameraDir.y;
+    //     cameraTo.z = cameraPos.z + cameraDir.z;
+    //     yfov = eng.appManager.cameras[0].yfov;
+    //     zfar = eng.appManager.cameras[0].zfar;
+    //     znear = eng.appManager.cameras[0].znear;
+    // }
+    // else
+    // {
+    //     cameraPos.x = 0.0f; cameraPos.y = 0.0f; cameraPos.z = 10.0f;
+    //     cameraTo.x  = 0.0f; cameraTo.y  = 0.0f; cameraTo.z  = 9.0f;
+    //     yfov = 0.39959f;
+    //     zfar = 100.0f;
+    //     znear = 0.1f;
+    // }
 
     // Get the lights (first one only)
     if(eng.appManager.lights.size()>0)
@@ -102,7 +135,7 @@ void EngineExample::updateUniformBuffers(int idx)
     // up = cam.matrix_world.to_quaternion() * Vector((0.0, 1.0, 0.0))
     // cam_direction = cam.matrix_world.to_quaternion() * Vector((0.0, 0.0, -1.0))
     MATRIX mView, mProjection;
-    // vUp.x = 0.0f; vUp.y = 1.0f; vUp.z = 0.0f;
+    vUp.x = 0.0f; vUp.y = 1.0f; vUp.z = 0.0f;
     // VEC3 camRoll = getDirection(eng.appManager.cameras[0].transform, vUp);
     mView.matrixLookAtRH(camera.from, camera.to, vUp);
 
@@ -122,7 +155,7 @@ void EngineExample::updateUniformBuffers(int idx)
          mModel.matrixScaling(mesh.transform.scale.x, mesh.transform.scale.y, mesh.transform.scale.z);
          mModel.matrixRotationQ(mesh.transform.rotation);
          mModel.matrixTranslation(mesh.transform.translation.x, mesh.transform.translation.y, mesh.transform.translation.z);
-         mModel.matrixRotationZ(eng.appManager.angle);
+        // mModel.matrixRotationZ(eng.appManager.angle);
 
          mMVP = mModel * mView * mProjection;
 

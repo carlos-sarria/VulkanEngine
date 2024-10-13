@@ -31,7 +31,7 @@ public:
 
     vkEngine eng;
 
-    void updateCamera(char keyPressed, const long mousePointX, const long mousePointY);
+    void updateCamera(char keyPressed, const bool mousePressed, const long mousePointX, const long mousePointY);
 
     VEC3 getDirection(Transform transform, VEC3 vUp);
 

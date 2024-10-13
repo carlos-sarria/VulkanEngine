@@ -127,6 +127,26 @@ void matrixScaling(const float fX, const float fY, const float fZ)
     matrixMultiply(mTemp);
 };
 
+
+VEC4 matrixQuaternion(VEC3 euler)
+{
+    VEC4 vOut;
+
+    double cy = cos(euler.z * 0.5);
+    double sy = sin(euler.z * 0.5);
+    double cr = cos(euler.x * 0.5);
+    double sr = sin(euler.x * 0.5);
+    double cp = cos(euler.y * 0.5);
+    double sp = sin(euler.y * 0.5);
+
+    vOut.w = cy * cr * cp + sy * sr * sp;
+    vOut.x = cy * sr * cp - sy * cr * sp;
+    vOut.y = cy * cr * sp + sy * sr * cp;
+    vOut.z = sy * cr * cp - cy * sr * sp;
+
+    return vOut;
+}
+
 void matrixRotationQ(VEC4 &quaternion)
 {
     MATRIX mTemp;
