@@ -70,7 +70,7 @@ inline void _loadTexture(AppManager& appManager, TextureData& texture)
     // Using the vkCmdCopyBufferToImage command in the second (uploading) step guarantees the correct
     // translation/swizzling of the texture data.
 
-    loadDDS(appManager, "..\\..\\Texture_1_compresonator.dds", texture); // format = VK_FORMAT_R8G8B8A8_UNORM;
+    loadDDS(appManager, "..\\..\\Texture_1.dds", texture); // format = VK_FORMAT_R8G8B8A8_UNORM;
 
     // The BufferData struct has been defined in this application to hold the necessary data for the staging buffer.
     BufferData stagingBufferData;

@@ -17,13 +17,38 @@ void EngineExample::drawFrame()
     eng.presentCurrentBuffer();
 }
 
-#define ROT_SPEED (0.1f*PI/180.0f)
-#define MOV_SPEED 0.3f
-void EngineExample::updateCamera(char keyPressed, const bool mousePressed, const long mousePointX, const long mousePointY)
+void EngineExample::initializeCamera()
 {
     Camera *camera = &eng.appManager.defaultCamera;
-    VEC4 vLookAt = {0.0f,0.0f,1.0f,0.0f};
-    static VEC3 pos = {0.0f, 0.0f,10.0f};
+
+    // Get the camera (the first one)
+    if(eng.appManager.cameras.size()>0)
+    {
+        camera->transform = eng.appManager.cameras[0].transform;
+        camera->yfov = eng.appManager.cameras[0].yfov;
+        camera->zfar = eng.appManager.cameras[0].zfar;
+        camera->znear = eng.appManager.cameras[0].znear;
+    }
+    else
+    {
+        VEC3 euler = {0.0f, 1.0f, 0.0f};
+        VEC3 pos = {0.0f, 10.0f, 0.0f};
+        camera->transform.rotation = MATRIX().matrixToQuaternion(euler);
+        camera->transform.translation = pos;
+        camera->yfov = 0.39959f;
+        camera->zfar = 5000.0f;
+        camera->znear = 0.01f;
+    }
+}
+
+#define ROT_SPEED (0.1f*PI/180.0f)
+#define MOV_SPEED 0.3f
+void EngineExample::updateCamera(char keyPressed, const bool mousePressed, long mousePointX, long mousePointY)
+{
+    Camera *camera = &eng.appManager.defaultCamera;
+    VEC4 vLookAt;
+    static VEC4 vUp = {0.0f,0.0f,1.0f,0.0f};
+    static VEC3 pos = {0.0f,0.0f,50.0f};
     static long mousePrevX, mousePrevY;
     static VEC2 angle;
     static bool bFirstTime = true;
@@ -31,6 +56,20 @@ void EngineExample::updateCamera(char keyPressed, const bool mousePressed, const
     if (bFirstTime || !mousePressed){
         mousePrevX = mousePointX;
         mousePrevY = mousePointY;
+        // if(bFirstTime)
+        // {
+        //     initializeCamera();
+        //     // pos = camera->transform.translation;
+        //     // VEC3 ang = MATRIX().matrixNormalize(pos);
+        //     // vUp.x = ang.x; vUp.y = ang.y; vUp.z = ang.z;
+
+        //     // Calculate camera from GLTF (does not work)
+        //     // MATRIX m;
+        //     // VEC3 rot = MATRIX().matrixToEuler(camera->transform.rotation);
+        //     // mousePrevX = 0L; mousePrevX = 0L;
+        //     // mousePointX = rot.z/ROT_SPEED; // pitch
+        //     // mousePointY = rot.y/ROT_SPEED; // yaw
+        // }
         bFirstTime = false;
     }
 
@@ -38,12 +77,12 @@ void EngineExample::updateCamera(char keyPressed, const bool mousePressed, const
     angle.x += (float)(mousePointX-mousePrevX);
     angle.y += (float)(mousePointY-mousePrevY);
 
-    VEC3 euler = {angle.y*ROT_SPEED, angle.x*ROT_SPEED, 0.0f};
-    VEC4 quaternion = mLookAt.matrixQuaternion(euler);
+    VEC3 euler = {angle.y*ROT_SPEED, angle.x*ROT_SPEED,0.0f};
+    VEC4 quaternion = mLookAt.matrixToQuaternion(euler);
 
     mLookAt.matrixRotationQ(quaternion);
 
-    vLookAt = mLookAt * vLookAt;
+    vLookAt = mLookAt * vUp;
 
     float zoom = 0.0f, pan = 0.0f;
     if(keyPressed == 'W') zoom =  MOV_SPEED;
@@ -78,8 +117,8 @@ void EngineExample::updateCamera(char keyPressed, const bool mousePressed, const
     camera->to.z = pos.z - vLookAt.z;
 
     camera->yfov = 0.39959f;
-    camera->zfar = 1000.0f;
-    camera->znear = 0.1f;
+    camera->zfar = 5000.0f;
+    camera->znear = 0.01f;
 }
 
 
@@ -105,28 +144,6 @@ void EngineExample::updateUniformBuffers(int idx)
 
     VEC3 cameraDir;
     float yfov, zfar, znear;
-
-    // Get the camera (the first one)
-    // if(eng.appManager.cameras.size()>0)
-    // {
-    //      VEC3 vUp = {0.0f,0.0f,-1.0f};
-    //     cameraPos = eng.appManager.cameras[0].transform.translation;
-    //     cameraDir = getDirection(eng.appManager.cameras[0].transform, vUp);
-    //     cameraTo.x = cameraPos.x + cameraDir.x;
-    //     cameraTo.y = cameraPos.y + cameraDir.y;
-    //     cameraTo.z = cameraPos.z + cameraDir.z;
-    //     yfov = eng.appManager.cameras[0].yfov;
-    //     zfar = eng.appManager.cameras[0].zfar;
-    //     znear = eng.appManager.cameras[0].znear;
-    // }
-    // else
-    // {
-    //     cameraPos.x = 0.0f; cameraPos.y = 0.0f; cameraPos.z = 10.0f;
-    //     cameraTo.x  = 0.0f; cameraTo.y  = 0.0f; cameraTo.z  = 9.0f;
-    //     yfov = 0.39959f;
-    //     zfar = 100.0f;
-    //     znear = 0.1f;
-    // }
 
     // Get the lights (first one only)
     if(eng.appManager.lights.size()>0)
