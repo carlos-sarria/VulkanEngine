@@ -30,13 +30,13 @@ public:
     VEC2(float vx, float vy, float vz) { x=vx; y=vy; }
     VEC2(const VEC2 &inV2) { x= inV2.x; y = inV2.y; }
 
-    void operator = (const VEC2 &inV2) { x = inV2.x; y = inV2.y; }
-    bool operator == (const VEC2 &inV2) { return (x == inV2.x && y == inV2.y); }
-    void operator + (const VEC2 &inV2) { x += inV2.x; y += inV2.y; }
-    void operator - (const VEC2 &inV2) { x -= inV2.x; y -= inV2.y; }
+    VEC2& operator = (const VEC2& inV2) { x = inV2.x; y = inV2.y; return *this;}
+    bool operator == (const VEC2& inV2) { return (x == inV2.x && y == inV2.y); }
+    VEC2& operator + (const VEC2& inV2) { x += inV2.x; y += inV2.y; return *this;}
+    VEC2& operator - (const VEC2& inV2) { x -= inV2.x; y -= inV2.y; return *this;}
 
     float lenght() { return sqrt(x*x+y*y); }
-    void  normalize() { float l = lenght(); if(l==0.0f) return; x = x/l;  y=y/l; }
+    VEC2&  normalize() { float l = lenght(); if(l==0.0f) { x = x/l;  y=y/l; }; return *this;}
 
 } ;
 
@@ -51,13 +51,13 @@ public:
     VEC3(float vx, float vy, float vz) { x=vx; y=vy; z=vz; }
     VEC3(const VEC3 &inV3) { x= inV3.x; y = inV3.y; z = inV3.z; }
 
-    void operator = (const VEC3 &inV3) { x = inV3.x; y = inV3.y; z = inV3.z; }
-    bool operator == (const VEC3 &inV3) { return (x == inV3.x && y == inV3.y && z == inV3.z); }
-    void operator + (const VEC3 &inV3) { x += inV3.x; y += inV3.y; z += inV3.z; }
-    void operator - (const VEC3 &inV3) { x -= inV3.x; y -= inV3.y; z -= inV3.z; }
+    VEC3& operator = (const VEC3& inV3) { x = inV3.x; y = inV3.y; z = inV3.z; return *this;}
+    bool operator == (const VEC3& inV3) { return (x == inV3.x && y == inV3.y && z == inV3.z); }
+    VEC3& operator + (const VEC3& inV3) { x += inV3.x; y += inV3.y; z += inV3.z; return *this; }
+    VEC3& operator - (const VEC3& inV3) { x -= inV3.x; y -= inV3.y; z -= inV3.z; return *this; }
 
     float lenght() { return sqrt(x*x+y*y+z*z); }
-    void  normalize() { float l = lenght(); if(l==0.0f) return; x = x/l;  y=y/l; z=z/l; }
+    VEC3&  normalize() { float l = lenght(); if(l!=0.0f){ x = x/l;  y=y/l; z=z/l; }; return *this;}
     float dotProduct(const VEC3 &inV3) {return (x*inV3.x + y*inV3.y + z*inV3.z);}
     VEC3  crossProduct(const VEC3 &inV3) { VEC3 vOut; vOut.x = y * inV3.z - z * inV3.y; vOut.y = z * inV3.x - x * inV3.z; vOut.z = x * inV3.y - y * inV3.x; return vOut; }
 };
@@ -77,23 +77,23 @@ public:
     void operator = (const QUATERNION &inQ) { x = inQ.x; y = inQ.y; z = inQ.z; w = inQ.w;}
     bool operator == (const QUATERNION &inQ) { return (x == inQ.x && y == inQ.y && z == inQ.z && w == inQ.w); }
 
-    VEC3 toEuler(QUATERNION q)
+    VEC3 toEuler()
     {
         VEC3 angle;
 
         // roll (x-axis rotation)
-        double sinr_cosp = 2 * (q.w * q.x + q.y * q.z);
-        double cosr_cosp = 1 - 2 * (q.x * q.x + q.y * q.y);
+        double sinr_cosp = 2 * (w * x + y * z);
+        double cosr_cosp = 1 - 2 * (x * x + y * y);
         angle.x = std::atan2(sinr_cosp, cosr_cosp);
 
         // pitch (y-axis rotation)
-        double sinp = std::sqrt(1 + 2 * (q.w * q.y - q.x * q.z));
-        double cosp = std::sqrt(1 - 2 * (q.w * q.y - q.x * q.z));
+        double sinp = std::sqrt(1 + 2 * (w * y - x * z));
+        double cosp = std::sqrt(1 - 2 * (w * y - x * z));
         angle.y = 2 * std::atan2(sinp, cosp) - M_PI / 2;
 
         // yaw (z-axis rotation)
-        double siny_cosp = 2 * (q.w * q.z + q.x * q.y);
-        double cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z);
+        double siny_cosp = 2 * (w * z + x * y);
+        double cosy_cosp = 1 - 2 * (y * y + z * z);
         angle.z = std::atan2(siny_cosp, cosy_cosp);
 
         return angle;
