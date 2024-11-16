@@ -1,9 +1,9 @@
 #version 320 es
 
 //// Vertex Shader inputs
-layout(location = 0) in highp vec4 vertex;
+layout(location = 0) in highp vec3 vertex;
 layout(location = 1) in highp vec3 normal;
-layout(location = 2) in mediump vec2 uv;
+layout(location = 2) in highp vec2 uv;
 
 //// Shader Resources ////
 layout(std140, set = 1, binding = 0) uniform UniformBufferObject
@@ -19,10 +19,11 @@ layout(location = 1) out highp float SHADE_OUT;
 void main()
 {
     vec3 light;
+    vec4 pos = vec4(vertex, 1.0);
 
 	// Calculate the ndc position for the current vertex using the model view projection matrix.
-	gl_Position = modelViewProjectionMatrix * vertex;
-        light = normalize(vec4(lightDirection,0.0)-vertex).xyz;
+        gl_Position = modelViewProjectionMatrix * pos;
+        light = normalize(lightDirection-vertex);
         SHADE_OUT = dot(normal,light)*0.5+0.5;
 	UV_OUT = uv;
 }

@@ -33,7 +33,7 @@ void EngineExample::initializeCamera()
     {
         VEC3 euler = {0.0f, 1.0f, 0.0f};
         VEC3 pos = {0.0f, 10.0f, 0.0f};
-        camera->transform.rotation = MATRIX().matrixToQuaternion(euler);
+        camera->transform.rotation.fromEuler(euler);
         camera->transform.translation = pos;
         camera->yfov = 0.39959f;
         camera->zfar = 5000.0f;
@@ -46,30 +46,31 @@ void EngineExample::initializeCamera()
 void EngineExample::updateCamera(char keyPressed, const bool mousePressed, long mousePointX, long mousePointY)
 {
     Camera *camera = &eng.appManager.defaultCamera;
-    VEC4 vLookAt;
-    static VEC4 vUp = {0.0f,0.0f,1.0f,0.0f};
+    VEC3 vLookAt;
+    static VEC3 vUp = {0.0f,0.0f, 1.0f};
     static VEC3 pos = {0.0f,0.0f,50.0f};
     static long mousePrevX, mousePrevY;
+    static float roll = 0.0f;
     static VEC2 angle;
     static bool bFirstTime = true;
 
     if (bFirstTime || !mousePressed){
         mousePrevX = mousePointX;
         mousePrevY = mousePointY;
-        // if(bFirstTime)
-        // {
-        //     initializeCamera();
-        //     // pos = camera->transform.translation;
-        //     // VEC3 ang = MATRIX().matrixNormalize(pos);
-        //     // vUp.x = ang.x; vUp.y = ang.y; vUp.z = ang.z;
+        if(bFirstTime)
+        {
+            VEC3 vAngle;
+            QUATERNION mRot;
+            initializeCamera();
+            pos = camera->transform.translation;
+            vAngle =  mRot.toEuler(camera->transform.rotation);
+            mRot.fromEuler(vAngle);
 
-        //     // Calculate camera from GLTF (does not work)
-        //     // MATRIX m;
-        //     // VEC3 rot = MATRIX().matrixToEuler(camera->transform.rotation);
-        //     // mousePrevX = 0L; mousePrevX = 0L;
-        //     // mousePointX = rot.z/ROT_SPEED; // pitch
-        //     // mousePointY = rot.y/ROT_SPEED; // yaw
-        // }
+            mousePrevX = 0L; mousePrevY = 0L;
+            mousePointX = vAngle.y/ROT_SPEED; // pitch
+            mousePointY = vAngle.x/ROT_SPEED; // yaw
+            roll = vAngle.z;
+        }
         bFirstTime = false;
     }
 
@@ -77,10 +78,11 @@ void EngineExample::updateCamera(char keyPressed, const bool mousePressed, long 
     angle.x += (float)(mousePointX-mousePrevX);
     angle.y += (float)(mousePointY-mousePrevY);
 
-    VEC3 euler = {angle.y*ROT_SPEED, angle.x*ROT_SPEED,0.0f};
-    VEC4 quaternion = mLookAt.matrixToQuaternion(euler);
+    VEC3 euler = {angle.y*ROT_SPEED, angle.x*ROT_SPEED, roll};
+    QUATERNION quaternion;
+    quaternion.fromEuler(euler);
 
-    mLookAt.matrixRotationQ(quaternion);
+    mLookAt.rotationQ(quaternion);
 
     vLookAt = mLookAt * vUp;
 
@@ -99,7 +101,7 @@ void EngineExample::updateCamera(char keyPressed, const bool mousePressed, long 
     {
         VEC3 vUp = {0.0f,1.0f,0.0f};
         VEC3 vDir = {vLookAt.x,vLookAt.y,vLookAt.z};
-        VEC3 cross = mLookAt.matrixCrossProduct(vDir, vUp);
+        VEC3 cross = vDir.crossProduct(vUp);
         pos.x = pos.x + cross.x * pan;
         pos.y = pos.y + cross.y * pan;
         pos.z = pos.z + cross.z * pan;
@@ -126,9 +128,9 @@ VEC3 EngineExample::getDirection(Transform transform, VEC3 vUp)
 {
     VEC3 retOut;
     MATRIX	m;
-    VEC4 vOut, vUp4 = {vUp.x,vUp.y,vUp.z,0.0f};
+    VEC3 vOut, vUp4 = {vUp.x,vUp.y,vUp.z};
 
-    m.matrixRotationQ(transform.rotation);
+    m.rotationQ(transform.rotation);
     vOut = m * vUp4;
 
     retOut.x = vOut.x; retOut.y = vOut.y; retOut.z = vOut.z;
@@ -149,8 +151,6 @@ void EngineExample::updateUniformBuffers(int idx)
     if(eng.appManager.lights.size()>0)
     {
         LightDir = eng.appManager.lights[0].transform.translation; // Position as we use point light
-        //LightDir = getDirection(eng.appManager.lights[0].transform, LightDir);
-        //LightDir.x  = 10.0f*cos(eng.appManager.angle); LightDir.y  = 10.0f*sin(eng.appManager.angle); cameraTo.z  = 0.0f;
     }
     else
     {
@@ -162,13 +162,12 @@ void EngineExample::updateUniformBuffers(int idx)
     // cam_direction = cam.matrix_world.to_quaternion() * Vector((0.0, 0.0, -1.0))
     MATRIX mView, mProjection;
     vUp.x = 0.0f; vUp.y = 1.0f; vUp.z = 0.0f;
-    // VEC3 camRoll = getDirection(eng.appManager.cameras[0].transform, vUp);
-    mView.matrixLookAtRH(camera.from, camera.to, vUp);
+    mView.lookAtRH(camera.from, camera.to, vUp);
 
     float aspectRatio = eng.surfaceData.width / eng.surfaceData.height;
     bool isRotated = (eng.surfaceData.width < eng.surfaceData.height);
 
-    mProjection.matrixPerspectiveFovRH(camera.yfov, aspectRatio, camera.znear, camera.zfar, isRotated);
+    mProjection.perspectiveFovRH(camera.yfov, aspectRatio, camera.znear, camera.zfar, isRotated);
 
     // Set the tarnsformation matrix for each mesh
     size_t minimumUboAlignment = static_cast<size_t>(eng.appManager.deviceProperties.limits.minUniformBufferOffsetAlignment);
@@ -178,9 +177,9 @@ void EngineExample::updateUniformBuffers(int idx)
     for (Mesh mesh : eng.appManager.meshes)
     {
          MATRIX mModel, mMVP;
-         mModel.matrixScaling(mesh.transform.scale.x, mesh.transform.scale.y, mesh.transform.scale.z);
-         mModel.matrixRotationQ(mesh.transform.rotation);
-         mModel.matrixTranslation(mesh.transform.translation.x, mesh.transform.translation.y, mesh.transform.translation.z);
+         mModel.scaling(mesh.transform.scale.x, mesh.transform.scale.y, mesh.transform.scale.z);
+         mModel.rotationQ(mesh.transform.rotation);
+         mModel.translation(mesh.transform.translation.x, mesh.transform.translation.y, mesh.transform.translation.z);
         // mModel.matrixRotationZ(eng.appManager.angle);
 
          mMVP = mModel * mView * mProjection;
@@ -190,8 +189,8 @@ void EngineExample::updateUniformBuffers(int idx)
 
          // Transform the light using the inverse model matrix. This will
          // allow to do smooth shading with just a dot product in the vertex shader
-         mModel.matrixInverse();
-         VEC4 vOut, vIn = {LightDir.x, LightDir.y, LightDir.z, 0.0f};
+         mModel.inverse();
+         VEC3 vOut, vIn = {LightDir.x, LightDir.y, LightDir.z};
          vOut = mModel * vIn;
          ubo.lightDirection.x =  vOut.x;
          ubo.lightDirection.y =  vOut.y;

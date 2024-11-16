@@ -17,7 +17,6 @@
 #include "vkFences.h"
 #include "vkCommandBuffer.h"
 #include "vkCloseDown.h"
-#include "vkMath.h"
 
 class vkEngine
 {

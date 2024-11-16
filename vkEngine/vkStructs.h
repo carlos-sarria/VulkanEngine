@@ -42,7 +42,7 @@ struct TextureData
 
 struct Vertex
 {
-    VEC4 pos; // coordinates.
+    VEC3 pos; // coordinates.
     VEC3 nor; // normals.
     VEC2 tex; // texture UVs.
 };
@@ -50,7 +50,7 @@ struct Vertex
 struct Transform
 {
     VEC3 translation;
-    VEC4 rotation;
+    QUATERNION rotation;
     VEC3 scale;
 };
 

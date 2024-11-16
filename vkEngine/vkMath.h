@@ -14,8 +14,9 @@ static const float fIdentity[16] = {
     0.0f, 0.0f, 0.0f, 1.0f
 };
 
-typedef struct
+class VEC2
 {
+public:
     union{
         float x;
         float u;
@@ -24,37 +25,110 @@ typedef struct
         float y;
         float v;
     };
-} VEC2;
 
-typedef struct
-{
-    float x;	/*!< x coordinate */
-    float y;	/*!< y coordinate */
-    float z;	/*!< z coordinate */
-} VEC3;
+    VEC2() { x= 0.0f; y = 0.0f; }
+    VEC2(float vx, float vy, float vz) { x=vx; y=vy; }
+    VEC2(const VEC2 &inV2) { x= inV2.x; y = inV2.y; }
 
-typedef struct
+    void operator = (const VEC2 &inV2) { x = inV2.x; y = inV2.y; }
+    bool operator == (const VEC2 &inV2) { return (x == inV2.x && y == inV2.y); }
+    void operator + (const VEC2 &inV2) { x += inV2.x; y += inV2.y; }
+    void operator - (const VEC2 &inV2) { x -= inV2.x; y -= inV2.y; }
+
+    float lenght() { return sqrt(x*x+y*y); }
+    void  normalize() { float l = lenght(); if(l==0.0f) return; x = x/l;  y=y/l; }
+
+} ;
+
+class VEC3
 {
-    float x;	/*!< x coordinate */
-    float y;	/*!< y coordinate */
-    float z;	/*!< z coordinate */
-    float w;	/*!< w coordinate */
-} VEC4;
+public:
+    float x;
+    float y;
+    float z;
+
+    VEC3() { x= 0.0f; y = 0.0f; z = 0.0f; }
+    VEC3(float vx, float vy, float vz) { x=vx; y=vy; z=vz; }
+    VEC3(const VEC3 &inV3) { x= inV3.x; y = inV3.y; z = inV3.z; }
+
+    void operator = (const VEC3 &inV3) { x = inV3.x; y = inV3.y; z = inV3.z; }
+    bool operator == (const VEC3 &inV3) { return (x == inV3.x && y == inV3.y && z == inV3.z); }
+    void operator + (const VEC3 &inV3) { x += inV3.x; y += inV3.y; z += inV3.z; }
+    void operator - (const VEC3 &inV3) { x -= inV3.x; y -= inV3.y; z -= inV3.z; }
+
+    float lenght() { return sqrt(x*x+y*y+z*z); }
+    void  normalize() { float l = lenght(); if(l==0.0f) return; x = x/l;  y=y/l; z=z/l; }
+    float dotProduct(const VEC3 &inV3) {return (x*inV3.x + y*inV3.y + z*inV3.z);}
+    VEC3  crossProduct(const VEC3 &inV3) { VEC3 vOut; vOut.x = y * inV3.z - z * inV3.y; vOut.y = z * inV3.x - x * inV3.z; vOut.z = x * inV3.y - y * inV3.x; return vOut; }
+};
+
+class QUATERNION
+{
+public:
+    float x;
+    float y;
+    float z;
+    float w;
+
+    QUATERNION() { x= 0.0f; y = 0.0f; z = 0.0f; w = 0.0f;}
+    QUATERNION(float vx, float vy, float vz, float vw) { x=vx; y=vy; z=vz; w=vw;}
+    QUATERNION(const QUATERNION &inQ) { x= inQ.x; y = inQ.y; z = inQ.z; w = inQ.w; }
+
+    void operator = (const QUATERNION &inQ) { x = inQ.x; y = inQ.y; z = inQ.z; w = inQ.w;}
+    bool operator == (const QUATERNION &inQ) { return (x == inQ.x && y == inQ.y && z == inQ.z && w == inQ.w); }
+
+    VEC3 toEuler(QUATERNION q)
+    {
+        VEC3 angle;
+
+        // roll (x-axis rotation)
+        double sinr_cosp = 2 * (q.w * q.x + q.y * q.z);
+        double cosr_cosp = 1 - 2 * (q.x * q.x + q.y * q.y);
+        angle.x = std::atan2(sinr_cosp, cosr_cosp);
+
+        // pitch (y-axis rotation)
+        double sinp = std::sqrt(1 + 2 * (q.w * q.y - q.x * q.z));
+        double cosp = std::sqrt(1 - 2 * (q.w * q.y - q.x * q.z));
+        angle.y = 2 * std::atan2(sinp, cosp) - M_PI / 2;
+
+        // yaw (z-axis rotation)
+        double siny_cosp = 2 * (q.w * q.z + q.x * q.y);
+        double cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z);
+        angle.z = std::atan2(siny_cosp, cosy_cosp);
+
+        return angle;
+    }
+
+    void fromEuler(VEC3 euler)
+    {
+        double cy = cos(euler.z * 0.5);
+        double sy = sin(euler.z * 0.5);
+        double cr = cos(euler.x * 0.5);
+        double sr = sin(euler.x * 0.5);
+        double cp = cos(euler.y * 0.5);
+        double sp = sin(euler.y * 0.5);
+
+        w = cy * cr * cp + sy * sr * sp;
+        x = cy * sr * cp - sy * cr * sp;
+        y = cy * cr * sp + sy * sr * cp;
+        z = sy * cr * cp - cy * sr * sp;
+    }
+};
 
 class MATRIX
 {
 public:
     float* operator [] ( const int Row ) { return &f[Row*4]; }
-    MATRIX operator*(MATRIX const& m) { matrixMultiply(m); return *this;}
-    VEC4 operator*(VEC4 const& v) { return vectorMultiply(v);}
+    MATRIX operator*(MATRIX const& m) { multiply(m); return *this;}
+    VEC3 operator*(VEC3 const& v) { return vectorMultiply(v);}
 
-    MATRIX() { matrixIdentity(); }
+    MATRIX() { identity(); }
 
     float f[16];
 
 public:
 
-void matrixIdentity()
+void identity()
 {
     this->f[ 0]=1.0f;	this->f[ 4]=0.0f;	this->f[ 8]=0.0f;	this->f[12]=0.0f;
     this->f[ 1]=0.0f;	this->f[ 5]=1.0f;	this->f[ 9]=0.0f;	this->f[13]=0.0f;
@@ -62,11 +136,11 @@ void matrixIdentity()
     this->f[ 3]=0.0f;	this->f[ 7]=0.0f;	this->f[11]=0.0f;	this->f[15]=1.0f;
 };
 
-void matrixMultiply(const MATRIX &m)
+void multiply(const MATRIX &m)
 {
     MATRIX mOut;
 
-    /* Perform calculation on a dummy matrix (mRet) */
+    /* Perform calculation on a dummy  (mRet) */
     mOut.f[ 0] = this->f[ 0]*m.f[ 0] + this->f[ 1]*m.f[ 4] + this->f[ 2]*m.f[ 8] + this->f[ 3]*m.f[12];
     mOut.f[ 1] = this->f[ 0]*m.f[ 1] + this->f[ 1]*m.f[ 5] + this->f[ 2]*m.f[ 9] + this->f[ 3]*m.f[13];
     mOut.f[ 2] = this->f[ 0]*m.f[ 2] + this->f[ 1]*m.f[ 6] + this->f[ 2]*m.f[10] + this->f[ 3]*m.f[14];
@@ -90,20 +164,30 @@ void matrixMultiply(const MATRIX &m)
     memcpy(this->f, mOut.f, sizeof(mOut.f));
 };
 
-VEC4 vectorMultiply(const VEC4 &m)
+QUATERNION quaternionMultiply(const QUATERNION &q)
 {
-    VEC4 vRet;
+    QUATERNION vRet;
 
-    /* Perform calculation on a dummy matrix (mRet) */
-    vRet.x = m.x*this->f[ 0] + m.y*this->f[ 4] + m.z*this->f[ 8] + m.w*this->f[12];
-    vRet.y = m.x*this->f[ 1] + m.y*this->f[ 5] + m.z*this->f[ 9] + m.w*this->f[13];
-    vRet.z = m.x*this->f[ 2] + m.y*this->f[ 6] + m.z*this->f[10] + m.w*this->f[14];
-    vRet.w = m.x*this->f[ 3] + m.y*this->f[ 7] + m.z*this->f[11] + m.w*this->f[15];
+    vRet.x = q.x*this->f[ 0] + q.y*this->f[ 4] + q.z*this->f[ 8] + q.w*this->f[12];
+    vRet.y = q.x*this->f[ 1] + q.y*this->f[ 5] + q.z*this->f[ 9] + q.w*this->f[13];
+    vRet.z = q.x*this->f[ 2] + q.y*this->f[ 6] + q.z*this->f[10] + q.w*this->f[14];
+    vRet.w = q.x*this->f[ 3] + q.y*this->f[ 7] + q.z*this->f[11] + q.w*this->f[15];
 
     return vRet;
 };
 
-void matrixTranslation(const float fX, const float fY, const float fZ)
+VEC3 vectorMultiply(const VEC3 &m)
+{
+    VEC3 vRet;
+
+    vRet.x = m.x*this->f[ 0] + m.y*this->f[ 4] + m.z*this->f[ 8];
+    vRet.y = m.x*this->f[ 1] + m.y*this->f[ 5] + m.z*this->f[ 9];
+    vRet.z = m.x*this->f[ 2] + m.y*this->f[ 6] + m.z*this->f[10];
+
+    return vRet;
+};
+
+void translation(const float fX, const float fY, const float fZ)
 {
     MATRIX mTemp;
 
@@ -112,10 +196,10 @@ void matrixTranslation(const float fX, const float fY, const float fZ)
     mTemp.f[ 2]=0.0f;	mTemp.f[ 6]=0.0f;	mTemp.f[10]=1.0f;	mTemp.f[14]=fZ;
     mTemp.f[ 3]=0.0f;	mTemp.f[ 7]=0.0f;	mTemp.f[11]=0.0f;	mTemp.f[15]=1.0f;
 
-    matrixMultiply(mTemp);
+    multiply(mTemp);
 };
 
-void matrixScaling(const float fX, const float fY, const float fZ)
+void scaling(const float fX, const float fY, const float fZ)
 {
     MATRIX mTemp;
 
@@ -124,51 +208,10 @@ void matrixScaling(const float fX, const float fY, const float fZ)
     mTemp.f[ 2]=0.0f;	mTemp.f[ 6]=0.0f;	mTemp.f[10]=fZ;     mTemp.f[14]=0.0f;
     mTemp.f[ 3]=0.0f;	mTemp.f[ 7]=0.0f;	mTemp.f[11]=0.0f;	mTemp.f[15]=1.0f;
 
-    matrixMultiply(mTemp);
+    multiply(mTemp);
 };
 
-
-VEC3 matrixToEuler(VEC4 q) {
-    VEC3 angle;
-
-    // roll (x-axis rotation)
-    double sinr_cosp = 2 * (q.w * q.x + q.y * q.z);
-    double cosr_cosp = 1 - 2 * (q.x * q.x + q.y * q.y);
-    angle.x = std::atan2(sinr_cosp, cosr_cosp);
-
-    // pitch (y-axis rotation)
-    double sinp = std::sqrt(1 + 2 * (q.w * q.y - q.x * q.z));
-    double cosp = std::sqrt(1 - 2 * (q.w * q.y - q.x * q.z));
-    angle.y = 2 * std::atan2(sinp, cosp) - M_PI / 2;
-
-    // yaw (z-axis rotation)
-    double siny_cosp = 2 * (q.w * q.z + q.x * q.y);
-    double cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z);
-    angle.z = std::atan2(siny_cosp, cosy_cosp);
-
-    return angle;
-}
-
-VEC4 matrixToQuaternion(VEC3 euler)
-{
-    VEC4 vOut;
-
-    double cy = cos(euler.z * 0.5);
-    double sy = sin(euler.z * 0.5);
-    double cr = cos(euler.x * 0.5);
-    double sr = sin(euler.x * 0.5);
-    double cp = cos(euler.y * 0.5);
-    double sp = sin(euler.y * 0.5);
-
-    vOut.w = cy * cr * cp + sy * sr * sp;
-    vOut.x = cy * sr * cp - sy * cr * sp;
-    vOut.y = cy * cr * sp + sy * sr * cp;
-    vOut.z = sy * cr * cp - cy * sr * sp;
-
-    return vOut;
-}
-
-void matrixRotationQ(VEC4 &quaternion)
+void rotationQ(QUATERNION &quaternion)
 {
     MATRIX mTemp;
 
@@ -199,10 +242,10 @@ void matrixRotationQ(VEC4 &quaternion)
     mTemp.f[11] = 0.0f;
     mTemp.f[15] = 1.0f;
 
-    matrixMultiply(mTemp);
+    multiply(mTemp);
 };
 
-void matrixRotationX(const float fAngle)
+void rotationX(const float fAngle)
 {
     MATRIX mTemp;
     float fCosine, fSine;
@@ -216,16 +259,16 @@ void matrixRotationX(const float fAngle)
     fSine	= (float)sin(fAngle);
 #endif
 
-    /* Create the trigonometric matrix corresponding to X Rotation */
+    /* Create the trigonometric  corresponding to X Rotation */
     mTemp.f[ 0]=1.0f;	mTemp.f[ 4]=0.0f;	mTemp.f[ 8]=0.0f;	mTemp.f[12]=0.0f;
     mTemp.f[ 1]=0.0f;	mTemp.f[ 5]=fCosine;mTemp.f[ 9]=fSine;	mTemp.f[13]=0.0f;
     mTemp.f[ 2]=0.0f;	mTemp.f[ 6]=-fSine;	mTemp.f[10]=fCosine;mTemp.f[14]=0.0f;
     mTemp.f[ 3]=0.0f;	mTemp.f[ 7]=0.0f;	mTemp.f[11]=0.0f;	mTemp.f[15]=1.0f;
 
-    matrixMultiply(mTemp);
+    multiply(mTemp);
 };
 
-void matrixRotationY(const float fAngle)
+void rotationY(const float fAngle)
 {
     MATRIX mTemp;
     float fCosine, fSine;
@@ -239,16 +282,16 @@ void matrixRotationY(const float fAngle)
     fSine	= (float)sin(fAngle);
 #endif
 
-    /* Create the trigonometric matrix corresponding to Y Rotation */
+    /* Create the trigonometric  corresponding to Y Rotation */
     mTemp.f[ 0]=fCosine;	mTemp.f[ 4]=0.0f;	mTemp.f[ 8]=-fSine;		mTemp.f[12]=0.0f;
     mTemp.f[ 1]=0.0f;		mTemp.f[ 5]=1.0f;	mTemp.f[ 9]=0.0f;		mTemp.f[13]=0.0f;
     mTemp.f[ 2]=fSine;		mTemp.f[ 6]=0.0f;	mTemp.f[10]=fCosine;	mTemp.f[14]=0.0f;
     mTemp.f[ 3]=0.0f;		mTemp.f[ 7]=0.0f;	mTemp.f[11]=0.0f;		mTemp.f[15]=1.0f;
 
-    matrixMultiply(mTemp);
+    multiply(mTemp);
 };
 
-void matrixRotationZ(const float fAngle)
+void rotationZ(const float fAngle)
 {
     MATRIX mTemp;
     float fCosine, fSine;
@@ -262,16 +305,16 @@ void matrixRotationZ(const float fAngle)
     fSine =		(float)sin(fAngle);
 #endif
 
-    /* Create the trigonometric matrix corresponding to Z Rotation */
+    /* Create the trigonometric  corresponding to Z Rotation */
     mTemp.f[ 0]=fCosine;	mTemp.f[ 4]=fSine;	mTemp.f[ 8]=0.0f;	mTemp.f[12]=0.0f;
     mTemp.f[ 1]=-fSine;		mTemp.f[ 5]=fCosine;mTemp.f[ 9]=0.0f;	mTemp.f[13]=0.0f;
     mTemp.f[ 2]=0.0f;		mTemp.f[ 6]=0.0f;	mTemp.f[10]=1.0f;	mTemp.f[14]=0.0f;
     mTemp.f[ 3]=0.0f;		mTemp.f[ 7]=0.0f;	mTemp.f[11]=0.0f;	mTemp.f[15]=1.0f;
 
-    matrixMultiply(mTemp);
+    multiply(mTemp);
 };
 
-void matrixTranspose()
+void transpose()
 {
     MATRIX mOut;
 
@@ -283,14 +326,14 @@ void matrixTranspose()
     memcpy(this->f, mOut.f, sizeof(mOut.f));
 };
 
-void matrixInverse()
+void inverse()
 {
     MATRIX mOut;
     double det_1;
     double pos, neg, temp;
 
     /* Calculate the determinant of submatrix A and determine if the
-       the matrix is singular as limited by the double precision
+       the  is singular as limited by the double precision
        floating-point data representation. */
     pos = neg = 0.0;
     temp =  this->f[ 0] * this->f[ 5] * this->f[10];
@@ -341,43 +384,7 @@ void matrixInverse()
     memcpy(this->f, mOut.f, sizeof(mOut.f));
 };
 
-VEC3 matrixNormalize(const VEC3 &vIn)
-{
-    VEC3 vOut;
-    float	f;
-    double temp;
-
-    temp = (double)(vIn.x * vIn.x + vIn.y * vIn.y + vIn.z * vIn.z);
-    if(temp!=0.0f)
-    {
-        temp = 1.0 / sqrt(temp);
-        f = (float)temp;
-    }
-    else
-    {
-        f = 0.0f;
-    }
-
-    vOut.x = vIn.x * f;
-    vOut.y = vIn.y * f;
-    vOut.z = vIn.z * f;
-
-    return vOut;
-};
-
-
-VEC3 matrixCrossProduct(const VEC3 &v1, const VEC3 &v2)
-{
-    VEC3 vOut;
-
-    vOut.x = v1.y * v2.z - v1.z * v2.y;
-    vOut.y = v1.z * v2.x - v1.x * v2.z;
-    vOut.z = v1.x * v2.y - v1.y * v2.x;
-
-    return vOut;
-};
-
-void matrixLookAtLH(const VEC3 &vEye, const VEC3 &vAt, const VEC3 &vUp)
+void lookAtLH(const VEC3 &vEye, const VEC3 &vAt, const VEC3 &vUp)
 {
     VEC3 f, s, u;
     MATRIX	mOut;
@@ -386,11 +393,11 @@ void matrixLookAtLH(const VEC3 &vEye, const VEC3 &vAt, const VEC3 &vUp)
     f.y = vEye.y - vAt.y;
     f.z = vEye.z - vAt.z;
 
-    f = matrixNormalize(f);
-    s = matrixCrossProduct(f, vUp);
-    s = matrixNormalize(s);
-    u = matrixCrossProduct(s, f);
-    u = matrixNormalize(u);
+    f.normalize();
+    s = f.crossProduct(vUp);
+    s.normalize();
+    u = s.crossProduct(f);
+    u.normalize();
 
     mOut.f[ 0] = s.x;
     mOut.f[ 1] = u.x;
@@ -412,11 +419,11 @@ void matrixLookAtLH(const VEC3 &vEye, const VEC3 &vAt, const VEC3 &vUp)
     mOut.f[14] = 0;
     mOut.f[15] = 1;
 
-    matrixTranslation(-vEye.x, -vEye.y, -vEye.z);
-    matrixMultiply(mOut);
+    translation(-vEye.x, -vEye.y, -vEye.z);
+    multiply(mOut);
 };
 
-void matrixLookAtRH(const VEC3 &vEye, const VEC3 &vAt, const VEC3 &vUp)
+void lookAtRH(const VEC3 &vEye, const VEC3 &vAt, const VEC3 &vUp)
 {
     VEC3 f, s, u;
     MATRIX	mOut, t, p;
@@ -425,19 +432,19 @@ void matrixLookAtRH(const VEC3 &vEye, const VEC3 &vAt, const VEC3 &vUp)
     f.y = vAt.y - vEye.y;
     f.z = vAt.z - vEye.z;
 
-    f = matrixNormalize(f);
-    s = matrixCrossProduct(f, vUp);
-    s = matrixNormalize(s);
-    u = matrixCrossProduct(s, f);
-    u = matrixNormalize(u);
+    f.normalize();
+    s = f.crossProduct(vUp);
+    s.normalize();
+    u = s.crossProduct(f);
+    u.normalize();
 
     // Fix for when vectors are parallel
     if (s.x==0.0f && s.y==0.0f && s.z==0.0f){
             VEC3 newUp = {vUp.x+0.0000001f,vUp.y+0.0000001f,vUp.z+0.0000001f};
-            s = matrixCrossProduct(f, newUp);
-            s = matrixNormalize(s);
-            u = matrixCrossProduct(s, f);
-            u = matrixNormalize(u);
+            s = f.crossProduct(newUp);
+            s.normalize();
+            u = s.crossProduct(f);
+            u.normalize();
     }
 
     mOut.f[ 0] = s.x;
@@ -460,11 +467,11 @@ void matrixLookAtRH(const VEC3 &vEye, const VEC3 &vAt, const VEC3 &vUp)
     mOut.f[14] = 0;
     mOut.f[15] = 1;
 
-    matrixTranslation(-vEye.x, -vEye.y, -vEye.z);
-    matrixMultiply(mOut);
+    translation(-vEye.x, -vEye.y, -vEye.z);
+    multiply(mOut);
 };
 
-void matrixPerspectiveFovLH(const float fFOVy, const float fAspect, const float fNear, const float fFar, const bool bRotate)
+void perspectiveFovLH(const float fFOVy, const float fAspect, const float fNear, const float fFar, const bool bRotate)
 {
     MATRIX mOut;
     float f, n, fRealAspect;
@@ -498,11 +505,11 @@ void matrixPerspectiveFovLH(const float fFOVy, const float fAspect, const float 
     mOut.f[14] = -fFar * fNear * n;
     mOut.f[15] = 0;
 
-    matrixMultiply(mOut);
-    if (bRotate) matrixRotationZ(-90.0f*PI/180.0f);
+    multiply(mOut);
+    if (bRotate) rotationZ(-90.0f*PI/180.0f);
 };
 
-void matrixPerspectiveFovRH(const float fFOVy, const float fAspect, const float fNear, const float fFar, const bool bRotate)
+void perspectiveFovRH(const float fFOVy, const float fAspect, const float fNear, const float fFar, const bool bRotate)
 {
     MATRIX mOut;
     float f, n, fRealAspect;
@@ -536,11 +543,11 @@ void matrixPerspectiveFovRH(const float fFOVy, const float fAspect, const float 
     mOut.f[14] = (2 * fFar * fNear) * n;
     mOut.f[15] = 0;
 
-    matrixMultiply(mOut);
-    if (bRotate) matrixRotationZ(-90.0f*PI/180.0f);
+    multiply(mOut);
+    if (bRotate) rotationZ(-90.0f*PI/180.0f);
 };
 
-void matrixOrthoLH(const float w, const float h, const float zn, const float zf, const bool  bRotate)
+void orthoLH(const float w, const float h, const float zn, const float zf, const bool  bRotate)
 {
     MATRIX mOut;
 
@@ -564,11 +571,11 @@ void matrixOrthoLH(const float w, const float h, const float zn, const float zf,
     mOut.f[14] = 0;
     mOut.f[15] = 1;
 
-    matrixMultiply(mOut);
-    if (bRotate) matrixRotationZ (-90.0f*PI/180.0f);
+    multiply(mOut);
+    if (bRotate) rotationZ (-90.0f*PI/180.0f);
 };
 
-void matrixOrthoRH(const float w, const float h, const float zn, const float zf, const bool  bRotate)
+void orthoRH(const float w, const float h, const float zn, const float zf, const bool  bRotate)
 {
     MATRIX mOut;
 
@@ -592,11 +599,11 @@ void matrixOrthoRH(const float w, const float h, const float zn, const float zf,
     mOut.f[14] = 0;
     mOut.f[15] = 1;
 
-    matrixMultiply(mOut);
-    if (bRotate) matrixRotationZ(-90.0f*PI/180.0f);
+    multiply(mOut);
+    if (bRotate) rotationZ(-90.0f*PI/180.0f);
 };
 
-VEC3 matrixLerp(const VEC3 &v1, const VEC3 &v2, const float s)
+VEC3 lerp(const VEC3 &v1, const VEC3 &v2, const float s)
 {
     VEC3 vOut;
 
@@ -607,22 +614,9 @@ VEC3 matrixLerp(const VEC3 &v1, const VEC3 &v2, const float s)
     return vOut;
 };
 
-float matrixDotProduct(const VEC3 &v1, const VEC3 &v2)
-{
-    return (v1.x*v2.x + v1.y*v2.y + v1.z*v2.z);
-};
-
-float matrixLength(const VEC3 &vIn)
-{
-    double temp;
-
-    temp = (double)(vIn.x * vIn.x + vIn.y * vIn.y + vIn.z * vIn.z);
-    return (float) sqrt(temp);
-};
-
-void matrixLinearEqSolve(
+void linearEqSolve(
     float		* const pRes,
-    float		** const pSrc,	// 2D array of floats. 4 Eq linear problem is 5x4 matrix, constants in first column.
+    float		** const pSrc,	// 2D array of floats. 4 Eq linear problem is 5x4 , constants in first column.
     const int	nCnt)
 {
     int		i, j, k;
@@ -672,8 +666,8 @@ void matrixLinearEqSolve(
         }
     }
 
-    // Solve the top-left sub matrix
-    matrixLinearEqSolve(pRes, pSrc, nCnt - 1);
+    // Solve the top-left sub
+    linearEqSolve(pRes, pSrc, nCnt - 1);
 
     // Now calc the solution for the bottom row
     f = pSrc[nCnt-1][0];
@@ -686,7 +680,7 @@ void matrixLinearEqSolve(
     pRes[nCnt-1] = f;
 };
 
-void matrixInverseEx()
+void inverseEx()
 {
     MATRIX mOut;
     float *ppfRows[4];
@@ -706,7 +700,7 @@ void matrixInverseEx()
             memcpy(&ppfRows[j][1], &this->f[j * 4], 4 * sizeof(float));
         }
 
-        matrixLinearEqSolve(pfRes, (float**)ppfRows, 4);
+        linearEqSolve(pfRes, (float**)ppfRows, 4);
 
         for(j = 0; j < 4; ++j)
         {

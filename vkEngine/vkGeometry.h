@@ -130,18 +130,11 @@ inline void _loadGLTF(AppManager& appManager, const char* fileName)
                     Geometry[i].pos.x = buffer_pos[i * 3 + 0]; // VEC3
                     Geometry[i].pos.y = buffer_pos[i * 3 + 1];
                     Geometry[i].pos.z = buffer_pos[i * 3 + 2];
-                    Geometry[i].pos.w = 1.0f;
                     Geometry[i].nor.x = buffer_nor[i * 3 + 0]; // VEC3
                     Geometry[i].nor.y = buffer_nor[i * 3 + 1];
                     Geometry[i].nor.z = buffer_nor[i * 3 + 2];
                     Geometry[i].tex.u = buffer_tex[i * 2 + 0]; // VEC2
                     Geometry[i].tex.v = buffer_tex[i * 2 + 1];
-
-                    // Log(false, ("INDEX " + std::to_string(i) + " "+ std::to_string(index) +
-                    //     " x: " + std::to_string(Geometry[i].x) +
-                    //     " y: " + std::to_string(Geometry[i].y) +
-                    //     " z: " + std::to_string(Geometry[i].z)
-                    //     ).c_str());
                 }
             }
 
