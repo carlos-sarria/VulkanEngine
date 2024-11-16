@@ -27,16 +27,16 @@ public:
     };
 
     VEC2() { x= 0.0f; y = 0.0f; }
-    VEC2(float vx, float vy, float vz) { x=vx; y=vy; }
+    VEC2(float vx, float vy) { x=vx; y=vy; }
     VEC2(const VEC2 &inV2) { x= inV2.x; y = inV2.y; }
 
-    VEC2& operator = (const VEC2& inV2) { x = inV2.x; y = inV2.y; return *this;}
+    VEC2 operator = (const VEC2& inV2) { x = inV2.x; y = inV2.y; return *this;}
     bool operator == (const VEC2& inV2) { return (x == inV2.x && y == inV2.y); }
-    VEC2& operator + (const VEC2& inV2) { x += inV2.x; y += inV2.y; return *this;}
-    VEC2& operator - (const VEC2& inV2) { x -= inV2.x; y -= inV2.y; return *this;}
+    VEC2 operator + (const VEC2& inV2)  const { return VEC2(x+inV2.x, y+inV2.y); }
+    VEC2 operator - (const VEC2& inV2)  const { return VEC2(x-inV2.x, y-inV2.y); }
 
     float lenght() { return sqrt(x*x+y*y); }
-    VEC2&  normalize() { float l = lenght(); if(l==0.0f) { x = x/l;  y=y/l; }; return *this;}
+    VEC2  normalize() { float l = lenght(); if(l==0.0f) { x = x/l;  y=y/l; }; return *this;}
 
 } ;
 
@@ -53,13 +53,14 @@ public:
 
     VEC3& operator = (const VEC3& inV3) { x = inV3.x; y = inV3.y; z = inV3.z; return *this;}
     bool operator == (const VEC3& inV3) { return (x == inV3.x && y == inV3.y && z == inV3.z); }
-    VEC3& operator + (const VEC3& inV3) { x += inV3.x; y += inV3.y; z += inV3.z; return *this; }
-    VEC3& operator - (const VEC3& inV3) { x -= inV3.x; y -= inV3.y; z -= inV3.z; return *this; }
+    const VEC3 operator + (const VEC3& inV3) const { return VEC3(x+inV3.x, y+inV3.y, z+inV3.z); }
+    const VEC3 operator - (const VEC3& inV3) const { return VEC3(x-inV3.x, y-inV3.y, z-inV3.z); }
+    const VEC3 operator * (float const& f) const { return VEC3(x*f, y*f, z*f);}
 
     float lenght() { return sqrt(x*x+y*y+z*z); }
     VEC3&  normalize() { float l = lenght(); if(l!=0.0f){ x = x/l;  y=y/l; z=z/l; }; return *this;}
     float dotProduct(const VEC3 &inV3) {return (x*inV3.x + y*inV3.y + z*inV3.z);}
-    VEC3  crossProduct(const VEC3 &inV3) { VEC3 vOut; vOut.x = y * inV3.z - z * inV3.y; vOut.y = z * inV3.x - x * inV3.z; vOut.z = x * inV3.y - y * inV3.x; return vOut; }
+    const VEC3  crossProduct(const VEC3 &inV3) { VEC3 vOut; vOut.x = y * inV3.z - z * inV3.y; vOut.y = z * inV3.x - x * inV3.z; vOut.z = x * inV3.y - y * inV3.x; return vOut; }
 };
 
 class QUATERNION

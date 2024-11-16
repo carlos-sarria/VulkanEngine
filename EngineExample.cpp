@@ -22,7 +22,7 @@ void EngineExample::initializeCamera()
     Camera *camera = &eng.appManager.defaultCamera;
 
     // Get the camera (the first one)
-    if(eng.appManager.cameras.size()>0)
+    if(0)//eng.appManager.cameras.size()>0)
     {
         camera->transform = eng.appManager.cameras[0].transform;
         camera->from = eng.appManager.cameras[0].transform.translation;
@@ -33,7 +33,9 @@ void EngineExample::initializeCamera()
     }
     else
     {
-        camera->from = VEC3(0.0f, 50.0f, 0.0f);
+        camera->transform.rotation = QUATERNION(0.0f,0.0f,0.0f,0.0f);
+        camera->transform.translation = VEC3(0.0f,50.0f,0.0f);
+        camera->from = camera->transform.translation;
         camera->to = VEC3(0.0f, 0.0f, 0.0f);
         camera->yfov = 0.39959f;
         camera->zfar = 5000.0f;
@@ -46,9 +48,7 @@ void EngineExample::initializeCamera()
 void EngineExample::updateCamera(char keyPressed, const bool mousePressed, long mousePointX, long mousePointY)
 {
     Camera *camera = &eng.appManager.defaultCamera;
-    MATRIX mLookAt;
-    VEC3 vLookAt;
-    static VEC3 pos;
+    static VEC3 camPos;
     static long mousePrevX, mousePrevY;
     static VEC2 angle;
     static bool bFirstTime = true;
@@ -56,53 +56,50 @@ void EngineExample::updateCamera(char keyPressed, const bool mousePressed, long 
     if (bFirstTime || !mousePressed){
         mousePrevX = mousePointX;
         mousePrevY = mousePointY;
-        if(bFirstTime) { initializeCamera(); pos = camera->from;}
+        if(bFirstTime) {
+            initializeCamera();
+            camPos = camera->transform.translation;
+            VEC3 qe = camera->transform.rotation.toEuler();
+            angle.x = qe.x/ROT_SPEED;
+            angle.y = qe.z/ROT_SPEED;
+        }
         bFirstTime = false;
     }
 
     angle.x += (float)(mousePointX-mousePrevX);
     angle.y += (float)(mousePointY-mousePrevY);
 
-    VEC3 euler = {-angle.y*ROT_SPEED, 0.0f, angle.x*ROT_SPEED};
+    MATRIX mLookAt;
+    VEC3 vLookAt;
     QUATERNION quaternion;
+    VEC3 euler = {-angle.y*ROT_SPEED, 0.0f, angle.x*ROT_SPEED};
     quaternion.fromEuler(euler);
 
-    // Rotate the LOOKAT vector (0,1,0) using the Quaternion
-    vLookAt = camera->transform.translation;
-    vLookAt.normalize();
+    // Rotate the Blender LookAt vector (0,-1,0) using the Quaternion
+    vLookAt = VEC3(0.0f,-1.0f,0.0); //camera->transform.translation;
     mLookAt.rotationQ(quaternion);
     vLookAt = mLookAt * vLookAt;
 
     float zoom = 0.0f, pan = 0.0f;
-    if(keyPressed == 'W') zoom =  MOV_SPEED;
-    if(keyPressed == 'S') zoom = -MOV_SPEED;
-    if(keyPressed == 'A') pan  =  MOV_SPEED;
-    if(keyPressed == 'D') pan  = -MOV_SPEED;
+    if(keyPressed == 'W') zoom = -MOV_SPEED;
+    if(keyPressed == 'S') zoom =  MOV_SPEED;
+    if(keyPressed == 'A') pan  = -MOV_SPEED;
+    if(keyPressed == 'D') pan  =  MOV_SPEED;
     if(zoom!=0.0f)
     {
-        pos.x = pos.x - vLookAt.x * zoom;
-        pos.y = pos.y - vLookAt.y * zoom;
-        pos.z = pos.z - vLookAt.z * zoom;
+        camPos = camPos - vLookAt * zoom;
     }
     if(pan!=0.0f)
     {
-        VEC3 vDir = {vLookAt.x,vLookAt.y,vLookAt.z};
-        VEC3 cross = vDir.crossProduct(VEC3(0.0f,0.0f,1.0f));
-        pos.x = pos.x + cross.x * pan;
-        pos.y = pos.y + cross.y * pan;
-        pos.z = pos.z + cross.z * pan;
+        VEC3 cross = vLookAt.crossProduct(VEC3(0.0f,0.0f,1.0f));
+        camPos = camPos + cross * pan;
     }
 
     mousePrevX = mousePointX;
     mousePrevY = mousePointY;
 
-    camera->from.x = pos.x;
-    camera->from.y = pos.y;
-    camera->from.z = pos.z;
-
-    camera->to.x = pos.x - vLookAt.x;
-    camera->to.y = pos.y - vLookAt.y;
-    camera->to.z = pos.z - vLookAt.z;
+    camera->from = camPos;
+    camera->to = camPos + vLookAt;
 }
 
 //////////////////////////////////////////////////////////////////////////////
