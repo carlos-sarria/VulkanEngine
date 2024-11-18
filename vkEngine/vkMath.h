@@ -71,12 +71,14 @@ public:
     float z;
     float w;
 
-    QUATERNION() { x= 0.0f; y = 0.0f; z = 0.0f; w = 0.0f;}
+    QUATERNION() { x= 0.0f; y = 0.0f; z = 0.0f; w = 1.0f;}
     QUATERNION(float vx, float vy, float vz, float vw) { x=vx; y=vy; z=vz; w=vw;}
     QUATERNION(const QUATERNION &inQ) { x= inQ.x; y = inQ.y; z = inQ.z; w = inQ.w; }
 
     void operator = (const QUATERNION &inQ) { x = inQ.x; y = inQ.y; z = inQ.z; w = inQ.w;}
     bool operator == (const QUATERNION &inQ) { return (x == inQ.x && y == inQ.y && z == inQ.z && w == inQ.w); }
+    const QUATERNION operator + (const QUATERNION& inQ) const { return QUATERNION(x+inQ.x, y+inQ.y, z+inQ.z, w+inQ.w); }
+    const QUATERNION operator - (const QUATERNION& inQ) const { return QUATERNION(x-inQ.x, y-inQ.y, z-inQ.z, w-inQ.w); }
 
     VEC3 toEuler()
     {
@@ -100,7 +102,7 @@ public:
         return angle;
     }
 
-    void fromEuler(VEC3 euler)
+    QUATERNION fromEuler(VEC3 euler)
     {
         double cy = cos(euler.z * 0.5);
         double sy = sin(euler.z * 0.5);
@@ -113,6 +115,8 @@ public:
         x = cy * sr * cp - sy * cr * sp;
         y = cy * cr * sp + sy * sr * cp;
         z = sy * cr * cp - cy * sr * sp;
+
+        return *this;
     }
 };
 

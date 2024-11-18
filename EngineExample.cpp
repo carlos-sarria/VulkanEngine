@@ -22,7 +22,7 @@ void EngineExample::initializeCamera()
     Camera *camera = &eng.appManager.defaultCamera;
 
     // Get the camera (the first one)
-    if(0)//eng.appManager.cameras.size()>0)
+    if(eng.appManager.cameras.size()>0)
     {
         camera->transform = eng.appManager.cameras[0].transform;
         camera->from = eng.appManager.cameras[0].transform.translation;
@@ -33,8 +33,8 @@ void EngineExample::initializeCamera()
     }
     else
     {
-        camera->transform.rotation = QUATERNION(0.0f,0.0f,0.0f,0.0f);
-        camera->transform.translation = VEC3(0.0f,50.0f,0.0f);
+        camera->transform.rotation = QUATERNION(0.7f,0.0f,0.0f,0.7f);
+        camera->transform.translation = VEC3(0.0f,-30.0f,0.0f);
         camera->from = camera->transform.translation;
         camera->to = VEC3(0.0f, 0.0f, 0.0f);
         camera->yfov = 0.39959f;
@@ -43,43 +43,39 @@ void EngineExample::initializeCamera()
     }
 }
 
-#define ROT_SPEED (0.1f*PI/180.0f)
+#define ROT_SPEED (0.02f*PI/180.0f)
 #define MOV_SPEED 0.3f
 void EngineExample::updateCamera(char keyPressed, const bool mousePressed, long mousePointX, long mousePointY)
 {
     Camera *camera = &eng.appManager.defaultCamera;
-    static VEC3 camPos;
+    static VEC3 cameraPosition;
     static long mousePrevX, mousePrevY;
-    static VEC2 angle;
     static bool bFirstTime = true;
+    static QUATERNION cameraRotation;
 
     if (bFirstTime || !mousePressed){
         mousePrevX = mousePointX;
         mousePrevY = mousePointY;
         if(bFirstTime) {
             initializeCamera();
-            camPos = camera->transform.translation;
-            VEC3 qe = camera->transform.rotation.toEuler();
-            angle.x = qe.x/ROT_SPEED;
-            angle.y = qe.z/ROT_SPEED;
+            cameraPosition = camera->transform.translation;
+            cameraRotation = camera->transform.rotation;
         }
         bFirstTime = false;
     }
 
-    angle.x += (float)(mousePointX-mousePrevX);
-    angle.y += (float)(mousePointY-mousePrevY);
+    // Compose mouse movement with camera rotation
+    VEC3 angle = cameraRotation.toEuler();
+    angle.z += (float)(mousePointX-mousePrevX)*ROT_SPEED;
+    angle.x += (float)(mousePointY-mousePrevY)*ROT_SPEED;
+    cameraRotation = QUATERNION().fromEuler(angle);
 
+    // Rotate the Blender LookAt vector (0,0,-1) using the Quaternion
     MATRIX mLookAt;
-    VEC3 vLookAt;
-    QUATERNION quaternion;
-    VEC3 euler = {-angle.y*ROT_SPEED, 0.0f, angle.x*ROT_SPEED};
-    quaternion.fromEuler(euler);
+    mLookAt.rotationQ(cameraRotation);
+    VEC3 vLookAt = mLookAt * VEC3(0.0f,0.0f,-1.0);
 
-    // Rotate the Blender LookAt vector (0,-1,0) using the Quaternion
-    vLookAt = VEC3(0.0f,-1.0f,0.0); //camera->transform.translation;
-    mLookAt.rotationQ(quaternion);
-    vLookAt = mLookAt * vLookAt;
-
+    // Move camera with keyboard
     float zoom = 0.0f, pan = 0.0f;
     if(keyPressed == 'W') zoom = -MOV_SPEED;
     if(keyPressed == 'S') zoom =  MOV_SPEED;
@@ -87,19 +83,19 @@ void EngineExample::updateCamera(char keyPressed, const bool mousePressed, long 
     if(keyPressed == 'D') pan  =  MOV_SPEED;
     if(zoom!=0.0f)
     {
-        camPos = camPos - vLookAt * zoom;
+        cameraPosition = cameraPosition - vLookAt * zoom;
     }
     if(pan!=0.0f)
     {
         VEC3 cross = vLookAt.crossProduct(VEC3(0.0f,0.0f,1.0f));
-        camPos = camPos + cross * pan;
+        cameraPosition = cameraPosition + cross * pan;
     }
 
     mousePrevX = mousePointX;
     mousePrevY = mousePointY;
 
-    camera->from = camPos;
-    camera->to = camPos + vLookAt;
+    camera->from = cameraPosition;
+    camera->to = cameraPosition + vLookAt;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -144,7 +140,7 @@ void EngineExample::updateUniformBuffers(int idx)
          mModel.scaling(mesh.transform.scale.x, mesh.transform.scale.y, mesh.transform.scale.z);
          mModel.rotationQ(mesh.transform.rotation);
          mModel.translation(mesh.transform.translation.x, mesh.transform.translation.y, mesh.transform.translation.z);
-         //mModel.rotationZ(eng.appManager.angle);
+         //mModel.rotationZ(eng.appManager.angle); // FOR TESTING
 
          mMVP = mModel * mView * mProjection;
 
