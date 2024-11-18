@@ -43,7 +43,7 @@ void EngineExample::initializeCamera()
     }
 }
 
-#define ROT_SPEED (0.02f*PI/180.0f)
+#define ROT_SPEED (0.05f*PI/180.0f)
 #define MOV_SPEED 0.3f
 void EngineExample::updateCamera(char keyPressed, const bool mousePressed, long mousePointX, long mousePointY)
 {
@@ -71,6 +71,8 @@ void EngineExample::updateCamera(char keyPressed, const bool mousePressed, long 
     cameraRotation = QUATERNION().fromEuler(angle);
 
     // Rotate the Blender LookAt vector (0,0,-1) using the Quaternion
+    // up = cam.matrix_world.to_quaternion() * Vector((0.0, 1.0, 0.0))
+    // cam_direction = cam.matrix_world.to_quaternion() * Vector((0.0, 0.0, -1.0))
     MATRIX mLookAt;
     mLookAt.rotationQ(cameraRotation);
     VEC3 vLookAt = mLookAt * VEC3(0.0f,0.0f,-1.0);
@@ -118,9 +120,6 @@ void EngineExample::updateUniformBuffers(int idx)
         lightDir.x  = 10.0f; lightDir.y  = 10.0f; lightDir.z  = 0.0f;
     }
 
-    // Blender:
-    // up = cam.matrix_world.to_quaternion() * Vector((0.0, 1.0, 0.0))
-    // cam_direction = cam.matrix_world.to_quaternion() * Vector((0.0, 0.0, -1.0))
     MATRIX mView, mProjection;
     mView.lookAtRH(camera.from, camera.to, VEC3(0.0f,0.0f,1.0f));
 
