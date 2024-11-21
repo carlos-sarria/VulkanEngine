@@ -26,7 +26,7 @@ add_executable(VulkanEngine WIN32 ${SRC_FILES}
     vkEngine/vkMemory.h
     vkEngine/vkTextures.h
     vkEngine/vkShaders.h
-    vkEngine/vkGeometry.h
+    vkEngine/vkGLTF.h
     vkEngine/vkRenderPass.h
     vkEngine/vkDescriptor.h
     vkEngine/vkPipeline.h

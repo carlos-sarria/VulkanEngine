@@ -22,7 +22,8 @@ inline void _closeDown(AppManager& appManager)
     for (auto& semaphore : appManager.presentSemaphores) { vk::DestroySemaphore(appManager.device, semaphore, nullptr); }
 
     // Free the memory allocated for the descriptor sets.
-    vk::FreeDescriptorSets(appManager.device, appManager.descriptorPool, 1, &appManager.staticDescSet);
+    for(int i=0; i<appManager.textures.size(); i++)
+        vk::FreeDescriptorSets(appManager.device, appManager.descriptorPool, 1, &appManager.staticDescSet[i]);
     vk::FreeDescriptorSets(appManager.device, appManager.descriptorPool, 1, &appManager.dynamicDescSet);
 
     // Destroy both the descriptor layouts and descriptor pool.
@@ -38,17 +39,20 @@ inline void _closeDown(AppManager& appManager)
     vk::DestroyPipeline(appManager.device, appManager.pipeline, nullptr);
     vk::DestroyPipelineLayout(appManager.device, appManager.pipelineLayout, nullptr);
 
-    // Destroy the texture image.
-    vk::DestroyImage(appManager.device, appManager.texture.image, nullptr);
+    for(auto &texture : appManager.textures)
+    {
+        // Destroy the texture image.
+        vk::DestroyImage(appManager.device, texture.image, nullptr);
 
-    // Destroy the texture image view.
-    vk::DestroyImageView(appManager.device, appManager.texture.view, nullptr);
+        // Destroy the texture image view.
+        vk::DestroyImageView(appManager.device, texture.view, nullptr);
 
-    // Free the memory allocated for the texture.
-    vk::FreeMemory(appManager.device, appManager.texture.memory, nullptr);
+        // Free the memory allocated for the texture.
+        vk::FreeMemory(appManager.device, texture.memory, nullptr);
 
-    // Destroy the sampler.
-    vk::DestroySampler(appManager.device, appManager.texture.sampler, nullptr);
+        // Destroy the sampler.
+        vk::DestroySampler(appManager.device, texture.sampler, nullptr);
+    }
 
     // Destroy then free the memory for the vertex buffer.
     for (Mesh m : appManager.meshes)

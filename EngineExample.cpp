@@ -176,7 +176,7 @@ void EngineExample::updateUniformBuffers(int idx)
 ///////////////////////////////////////////////////////
 /// <summary>Initialises all Vulkan objects</summary>
 /// ///////////////////////////////////////////////////
-void EngineExample::initialize(const char* appName)
+void EngineExample::initialize(const char* appName, const char* gltfFile)
 {
     // Initialise all the pointers to Vulkan functions.
     vk::initVulkan();
@@ -193,12 +193,13 @@ void EngineExample::initialize(const char* appName)
     eng.initQueues();
     eng.initSwapChain();
     eng.initImagesAndViews();
-    eng.loadGLTF("..\\..\\suzanne.glb");
     eng.initCommandPoolAndBuffer();
-    eng.initShaders();
+
+    eng.loadGLTF(gltfFile);
+    eng.initShaders(); // requires num meshes from gltf
     eng.initUniformBuffers();
+
     eng.initRenderPass();
-    eng.loadTexture(eng.appManager.texture);
     eng.initDescriptorPoolAndSet();
     eng.initFrameBuffers();
     eng.initPipeline();

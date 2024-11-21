@@ -5,7 +5,6 @@
 #include "vkMath.h"
 
 #define FENCE_TIMEOUT 0xFFFFFFFFFFFFFFFFL
-#define NUM_DESCRIPTOR_SETS 2
 
 inline size_t _getAlignedDataSize(size_t dataSize, size_t minimumAlignment){
     return (dataSize / minimumAlignment) * minimumAlignment + ((dataSize % minimumAlignment) > 0 ? minimumAlignment : 0);
@@ -38,6 +37,7 @@ struct TextureData
     VkDeviceMemory memory;
     VkImageView view;
     VkSampler sampler;
+    std::string uri;
 };
 
 struct Vertex
@@ -60,6 +60,7 @@ struct Mesh
     BufferData indexBuffer;
     uint32_t vertexCount;
     Transform transform;
+    uint32_t textureID;
 };
 
 struct Light
@@ -102,6 +103,7 @@ struct AppManager
     std::vector<Mesh> meshes;
     std::vector<Camera> cameras;
     std::vector<Light> lights;
+    std::vector<TextureData> textures;
 
     std::vector<VkSemaphore> acquireSemaphore;
     std::vector<VkSemaphore> presentSemaphores;
@@ -131,12 +133,11 @@ struct AppManager
     VkRect2D scissor;
     VkDescriptorPool descriptorPool;
     VkDescriptorSet dynamicDescSet;
-    VkDescriptorSet staticDescSet;
+    std::vector<VkDescriptorSet> staticDescSet; // For textures
     VkDescriptorSetLayout staticDescriptorSetLayout;
     VkDescriptorSetLayout dynamicDescriptorSetLayout;
 
     BufferData dynamicUniformBufferData;
-    TextureData texture;
 
     VkImage depth_image;
     VkDeviceMemory depth_memory;

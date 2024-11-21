@@ -25,6 +25,8 @@ inline void _initDescriptorPoolAndSet(AppManager& appManager)
     // This is the size of the descriptor pool. This establishes how many descriptors are needed and their type.
     VkDescriptorPoolSize descriptorPoolSize[2];
 
+     int numTextures = appManager.textures.size(), numDescriptors = numTextures+1;
+
     descriptorPoolSize[0].descriptorCount = 1;
     descriptorPoolSize[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 
@@ -40,9 +42,9 @@ inline void _initDescriptorPoolAndSet(AppManager& appManager)
     descriptorPoolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
     descriptorPoolInfo.pNext = nullptr;
     descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    descriptorPoolInfo.poolSizeCount = 2;
+    descriptorPoolInfo.poolSizeCount = numDescriptors;
     descriptorPoolInfo.pPoolSizes = descriptorPoolSize;
-    descriptorPoolInfo.maxSets = 2;
+    descriptorPoolInfo.maxSets = numDescriptors;
 
     // Create the descriptor pool.
     debugAssertFunctionResult(vk::CreateDescriptorPool(appManager.device, &descriptorPoolInfo, nullptr, &appManager.descriptorPool), "Descriptor Pool Creation");
@@ -101,47 +103,59 @@ inline void _initDescriptorPoolAndSet(AppManager& appManager)
 
     debugAssertFunctionResult(vk::AllocateDescriptorSets(appManager.device, &descriptorAllocateInfo, &appManager.dynamicDescSet), "Descriptor Set Creation");
 
-    // Allocate the texture image descriptor set.
-    // The allocation struct variable is updated to point to the layout of the texture image descriptor set.
-    descriptorAllocateInfo.pSetLayouts = &appManager.staticDescriptorSetLayout;
-    debugAssertFunctionResult(vk::AllocateDescriptorSets(appManager.device, &descriptorAllocateInfo, &appManager.staticDescSet), "Descriptor Set Creation");
-
     // This information references the texture sampler that will be passed to the shaders by way of
     // the descriptor set. The sampler determines how the pixel data of the texture image will be
     // sampled and how it will be passed to the fragment shader. It also contains the actual image
     // object (via its image view) and the image layout.
     // This image layout is optimised for read-only access by shaders. The image was transitioned to
     // this layout using a memory barrier in initTexture().
-    VkDescriptorImageInfo descriptorImageInfo = {};
-    descriptorImageInfo.sampler = appManager.texture.sampler;
-    descriptorImageInfo.imageView = appManager.texture.view;
-    descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
     // Update the descriptor sets with the actual objects, in this case the texture image and the uniform buffer.
     // These structs specify which descriptor sets are going to be updated and hold a pointer to the actual objects.
-    VkWriteDescriptorSet descriptorSetWrite[2] = {};
+    VkWriteDescriptorSet *descriptorSetWrite;
+    descriptorSetWrite = (VkWriteDescriptorSet *)malloc(sizeof(VkWriteDescriptorSet)*numDescriptors);
 
-    descriptorSetWrite[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptorSetWrite[0].pNext = nullptr;
-    descriptorSetWrite[0].dstSet = appManager.staticDescSet;
-    descriptorSetWrite[0].descriptorCount = 1;
-    descriptorSetWrite[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    descriptorSetWrite[0].pImageInfo = &descriptorImageInfo; // Pass image object
-    descriptorSetWrite[0].dstArrayElement = 0;
-    descriptorSetWrite[0].dstBinding = 0;
-    descriptorSetWrite[0].pBufferInfo = nullptr;
-    descriptorSetWrite[0].pTexelBufferView = nullptr;
+    int count = 0;
 
-    descriptorSetWrite[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptorSetWrite[1].pNext = nullptr;
-    descriptorSetWrite[1].dstSet = appManager.dynamicDescSet;
-    descriptorSetWrite[1].descriptorCount = 1;
-    descriptorSetWrite[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-    descriptorSetWrite[1].pBufferInfo = &appManager.dynamicUniformBufferData.bufferInfo; // Pass uniform buffer to this function.
-    descriptorSetWrite[1].dstArrayElement = 0;
-    descriptorSetWrite[1].dstBinding = 0;
+    // Allocate the texture image descriptor set.
+    // The allocation struct variable is updated to point to the layout of the texture image descriptor set.
+    std::vector<VkDescriptorImageInfo> descriptorImageInfo;
+    descriptorAllocateInfo.pSetLayouts = &appManager.staticDescriptorSetLayout; // Same layout as the binding for the shaders/texture is always the same: 0
 
-    vk::UpdateDescriptorSets(appManager.device, 2, descriptorSetWrite, 0, nullptr);
+    for(; count<numTextures; count++)
+    {
+        appManager.staticDescSet.emplace_back();
+        debugAssertFunctionResult(vk::AllocateDescriptorSets(appManager.device, &descriptorAllocateInfo, &appManager.staticDescSet[count]), "Descriptor Set Creation");
+
+        descriptorImageInfo.emplace_back();
+        descriptorImageInfo[count].sampler = appManager.textures[count].sampler;
+        descriptorImageInfo[count].imageView =  appManager.textures[count].view;
+        descriptorImageInfo[count].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        descriptorSetWrite[count].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorSetWrite[count].pNext = nullptr;
+        descriptorSetWrite[count].dstSet = appManager.staticDescSet[count];
+        descriptorSetWrite[count].descriptorCount = 1;
+        descriptorSetWrite[count].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        descriptorSetWrite[count].pImageInfo = &descriptorImageInfo[count];
+        descriptorSetWrite[count].dstArrayElement = 0;
+        descriptorSetWrite[count].dstBinding = 0;
+        descriptorSetWrite[count].pBufferInfo = nullptr;
+        descriptorSetWrite[count].pTexelBufferView = nullptr;
+    }
+
+    descriptorSetWrite[count].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptorSetWrite[count].pNext = nullptr;
+    descriptorSetWrite[count].dstSet = appManager.dynamicDescSet;
+    descriptorSetWrite[count].descriptorCount = 1;
+    descriptorSetWrite[count].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    descriptorSetWrite[count].pBufferInfo = &appManager.dynamicUniformBufferData.bufferInfo; // Pass uniform buffer to this function.
+    descriptorSetWrite[count].dstArrayElement = 0;
+    descriptorSetWrite[count].dstBinding = 0;
+
+    vk::UpdateDescriptorSets(appManager.device, numDescriptors, descriptorSetWrite, 0, nullptr);
+
+    free(descriptorSetWrite);
 }
 
 

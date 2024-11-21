@@ -1,21 +1,29 @@
-#ifndef VKGEOMETRY_H
-#define VKGEOMETRY_H
+#ifndef VKGLTF_H
+#define VKGLTF_H
 
 #include "tiny_gltf.h"
 
 #include "vkStructs.h"
 #include "vkMemory.h"
 
+#include "vkTextures.h"
 
 // Callback function required for tiny_gltf
 static bool myTextureLoadingFunction(tinygltf::Image *image, const int image_idx, std::string * err,
         std::string * warn, int req_width, int req_height,
         const unsigned char * bytes, int size, void* user_data)
 {
+    AppManager *appManager = (AppManager *)user_data;
+
     // GLTF does not support DDS
-    // The data received here is just the PNG exported by Blender
+    // The data received here is just the RGBA exported by Blender
     // we will need to use the texture name and work out the DDS file
     Log(false, ("TEXTURE NAME: "+image->name).c_str());
+
+    std::string uri = "..//..//model//"+image->name+".dds";
+
+    appManager->textures.emplace_back();
+    _loadTexture(*appManager, appManager->textures[appManager->textures.size()-1], uri.c_str());
 
     return true;
 }
@@ -48,8 +56,9 @@ inline void _loadGLTF(AppManager& appManager, const char* fileName)
     tinygltf::TinyGLTF gltf_ctx;
     std::string err;
     std::string warn;
+    unsigned int textureID = 0;
 
-    gltf_ctx.SetImageLoader(myTextureLoadingFunction, nullptr);
+    gltf_ctx.SetImageLoader(myTextureLoadingFunction, (void *)&appManager);
 
     gltf_ctx.SetStoreOriginalJSONForExtrasAndExtensions(false);
 
@@ -100,7 +109,6 @@ inline void _loadGLTF(AppManager& appManager, const char* fileName)
             unsigned int numIndices = 0;
             unsigned int numVertices = 0;
 
-
             for (tinygltf::Primitive primitive : mesh.primitives)
             {
                 const tinygltf::Accessor accessor_indices = model.accessors[primitive.indices];
@@ -136,10 +144,18 @@ inline void _loadGLTF(AppManager& appManager, const char* fileName)
                     Geometry[i].tex.u = buffer_tex[i * 2 + 0]; // VEC2
                     Geometry[i].tex.v = buffer_tex[i * 2 + 1];
                 }
+
+                if(primitive.material != -1)
+                {
+                    textureID = model.materials[primitive.material].pbrMetallicRoughness.baseColorTexture.index;
+                    if(textureID == -1) textureID = 0;
+                }
             }
 
-            appManager.meshes.push_back(Mesh());
+            appManager.meshes.emplace_back();
             int index = appManager.meshes.size() - 1;
+
+            appManager.meshes[index].textureID = textureID;
 
             getTransform(appManager.meshes[index].transform, node);
 
@@ -157,4 +173,4 @@ inline void _loadGLTF(AppManager& appManager, const char* fileName)
 
 }
 
-#endif // VKGEOMETRY_H
+#endif // VKGLTF_H

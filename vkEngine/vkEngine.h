@@ -10,7 +10,7 @@
 #include "vkMemory.h"
 #include "vkTextures.h"
 #include "vkShaders.h"
-#include "vkGeometry.h"
+#include "vkGLTF.h"
 #include "vkRenderPass.h"
 #include "vkDescriptor.h"
 #include "vkPipeline.h"
@@ -89,8 +89,8 @@ public:
     }
 
     // Create a texture to apply to the primitive.
-    void loadTexture(TextureData& texture){
-        _loadTexture(appManager, texture);
+    void loadTexture(TextureData& texture, const char* textureFileName){
+        _loadTexture(appManager, texture, textureFileName);
     }
 
     // Create a descriptor pool and allocate descriptor sets for the buffers.

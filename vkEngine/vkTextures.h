@@ -49,7 +49,7 @@ inline bool loadDDS(AppManager& appManager, const char* textureFileName, Texture
 }
 
 /// <summary>Creates a texture image (VkImage) and maps it into GPU memory</summary>
-inline void _loadTexture(AppManager& appManager, TextureData& texture)
+inline void _loadTexture(AppManager& appManager, TextureData& texture, const char* textureFileName)
 {
     // In Vulkan, uploading an image requires multiple steps:
 
@@ -70,7 +70,7 @@ inline void _loadTexture(AppManager& appManager, TextureData& texture)
     // Using the vkCmdCopyBufferToImage command in the second (uploading) step guarantees the correct
     // translation/swizzling of the texture data.
 
-    loadDDS(appManager, "..\\..\\Texture_1.dds", texture); // format = VK_FORMAT_R8G8B8A8_UNORM;
+    loadDDS(appManager, textureFileName, texture); // format = VK_FORMAT_R8G8B8A8_UNORM;
 
     // The BufferData struct has been defined in this application to hold the necessary data for the staging buffer.
     BufferData stagingBufferData;
@@ -272,9 +272,9 @@ inline void _loadTexture(AppManager& appManager, TextureData& texture)
     samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
     samplerInfo.magFilter = VK_FILTER_LINEAR;
     samplerInfo.minFilter = VK_FILTER_LINEAR;
-    samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
     samplerInfo.anisotropyEnable = VK_FALSE;
     samplerInfo.maxAnisotropy = 1.0f;
     samplerInfo.borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;

@@ -69,7 +69,7 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE, _In_ LPSTR lpCmdL
 
     // Initialisation
     createWin32WIndowSurface(vulkanExample.eng.surfaceData);
-    vulkanExample.initialize(APP_NAME);
+    vulkanExample.initialize(APP_NAME, "..\\..\\model\\test.glb");
 
     //SetWindowLongPtrA(vulkanExample.eng.surfaceData.window, GWLP_USERDATA, (LONG_PTR)&vulkanExample);
 

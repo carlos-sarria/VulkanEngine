@@ -103,11 +103,6 @@ inline void _recordCommandBuffer(AppManager& appManager)
         // Bind the pipeline to the command buffer.
         vk::CmdBindPipeline(appManager.cmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, appManager.pipeline);
 
-        // A single large uniform buffer object is being used to hold all of the transformation matrices
-        // associated with the swapchain images. It is for this reason that only a single descriptor set is
-        // required for all of the frames.
-        const VkDescriptorSet descriptorSet[] = { appManager.staticDescSet, appManager.dynamicDescSet };
-
         size_t minimumUboAlignment = static_cast<size_t>(appManager.deviceProperties.limits.minUniformBufferOffsetAlignment);
         uint32_t bufferDataSize = static_cast<uint32_t>(_getAlignedDataSize(sizeof(UBO), minimumUboAlignment));
 
@@ -121,7 +116,8 @@ inline void _recordCommandBuffer(AppManager& appManager)
 
             // Bind the descriptor sets. The &offset parameter is the offset into the dynamic uniform buffer which is
             // contained within the dynamic descriptor set.
-            vk::CmdBindDescriptorSets(appManager.cmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, appManager.pipelineLayout, 0, NUM_DESCRIPTOR_SETS, descriptorSet, 1, &offset);
+            const VkDescriptorSet descriptorSet[] = { appManager.staticDescSet[m.textureID], appManager.dynamicDescSet };
+            vk::CmdBindDescriptorSets(appManager.cmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, appManager.pipelineLayout, 0, 2, descriptorSet, 1, &offset);
 
             vk::CmdBindVertexBuffers(appManager.cmdBuffers[i], 0, 1, &m.vertexBuffer.buffer, vertexOffsets);
 

@@ -43,7 +43,7 @@ public:
 	void applyRotation(int idx = 0);
 
 	// Initialises all the needed Vulkan objects, but calling all the Init__ methods.
-    void initialize(const char* appName);
+    void initialize(const char* appName, const char* gltfFile);
 
 	// Cleans up everything when the application is finished with.
     void deinitialize() { eng.closeDown(); }

@@ -12,7 +12,8 @@ inline void _startCurrentBuffer(AppManager& appManager)
 
     // Acquire and get the index of the next available swapchain image.
     debugAssertFunctionResult(
-        vk::AcquireNextImageKHR(appManager.device, appManager.swapchain, std::numeric_limits<uint64_t>::max(), appManager.acquireSemaphore[appManager.frameId], VK_NULL_HANDLE, & appManager.currentBuffer),
+        vk::AcquireNextImageKHR(appManager.device, appManager.swapchain, std::numeric_limits<uint64_t>::max(),
+                                appManager.acquireSemaphore[appManager.frameId], VK_NULL_HANDLE, & appManager.currentBuffer),
         "Draw - Acquire Image");
 
     // Wait for the fence to be signalled before starting to render the current frame, then reset it so it can be reused.
