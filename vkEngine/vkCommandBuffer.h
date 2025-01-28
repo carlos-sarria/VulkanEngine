@@ -51,7 +51,7 @@ inline void _recordCommandBuffer(AppManager& appManager)
     // This is the colour value that the framebuffer is cleared to at the start of the render pass.
     // The framebuffer is cleared because, during render pass creation, the loadOp parameter was set to VK_LOAD_OP_CLEAR. Remember
     // that this is crucial as it can reduce system memory bandwidth and reduce power consumption, particularly on PowerVR platforms.
-    VkClearValue clearColor = { 0.00f, 0.70f, 0.67f, 1.0f };
+    VkClearValue clearColor = { 0.0f, 0.1f, 0.2f, 1.0f };
     VkClearValue depthClear;
     depthClear.depthStencil.depth = 1.f;
 

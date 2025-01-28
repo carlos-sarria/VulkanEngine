@@ -20,7 +20,8 @@ static bool myTextureLoadingFunction(tinygltf::Image *image, const int image_idx
     // we will need to use the texture name and work out the DDS file
     Log(false, ("TEXTURE NAME: "+image->name).c_str());
 
-    std::string uri = "..//..//model//"+image->name+".dds";
+    std::string name = image->name.substr(0, image->name.rfind('.'));
+    std::string uri = appManager->gltfPath+"\\"+name+".dds";
 
     appManager->textures.emplace_back();
     _loadTexture(*appManager, appManager->textures[appManager->textures.size()-1], uri.c_str());
@@ -57,6 +58,9 @@ inline void _loadGLTF(AppManager& appManager, const char* fileName)
     std::string err;
     std::string warn;
     unsigned int textureID = 0;
+
+    std::string fn(fileName);
+    appManager.gltfPath = fn.substr(0, fn.rfind('\\'));
 
     gltf_ctx.SetImageLoader(myTextureLoadingFunction, (void *)&appManager);
 

@@ -149,6 +149,8 @@ struct AppManager
 
     Camera defaultCamera;
 
+    std::string gltfPath;
+
     float angle;
 };
 

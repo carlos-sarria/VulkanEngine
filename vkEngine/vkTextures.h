@@ -14,7 +14,7 @@ inline bool loadDDS(AppManager& appManager, const char* textureFileName, Texture
     textureFile = fopen(textureFileName, "rb");
     if(!textureFile)
     {
-        Log(true, (std::string(" Failed load of ") + textureFileName).c_str());
+        Log(true, (std::string("Failed load of ") + textureFileName).c_str());
         exit(1);
     }
 
@@ -94,7 +94,7 @@ inline void _loadTexture(AppManager& appManager, TextureData& texture, const cha
     imageInfo.imageType = VK_IMAGE_TYPE_2D;
     imageInfo.flags = 0;
     imageInfo.pNext = nullptr;
-    imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+    imageInfo.format = VK_FORMAT_B8G8R8A8_UNORM;
     imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
     imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     imageInfo.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
@@ -245,7 +245,7 @@ inline void _loadTexture(AppManager& appManager, TextureData& texture, const cha
     imageViewInfo.pNext = nullptr;
     imageViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     imageViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    imageViewInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+    imageViewInfo.format = VK_FORMAT_B8G8R8A8_UNORM;
     imageViewInfo.image = texture.image;
     imageViewInfo.subresourceRange.layerCount = 1;
     imageViewInfo.subresourceRange.levelCount = 1;
